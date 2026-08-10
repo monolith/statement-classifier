@@ -164,64 +164,303 @@ Each of the eighteen fine labels carries:
 
 - **Cue** — the surface pattern, stated so a reader can check it without
   inferring intent.
-- **Does not fire when** — at least two explicit exclusions.
-- **Two exemplars** — one from a document-style statement, one conversational.
-- **Pairwise rules** — an explicit "how to tell this from X" for every label it
-  is confusable with.
+- **Excludes** — at least two explicit non-firing conditions.
+- **Exemplars** — one document-style statement, one conversational.
 
-`[DESIGN]` Pairwise rules are required for at least these pairs, which are the
-predictable collisions in this label set: `observation`/`finding`,
-`finding`/`conclusion`, `definition`/`background`, `mechanism`/`tradeoff`,
-`procedure`/`technique`, `recommendation`/`obligation`, `event`/`decision`,
-`fact`/`finding`.
+Exemplars are drawn from quantitative finance and LLM/ML research, because
+those are the domains this classifier runs on. `[DESIGN]` Note the drift: the
+anchor categories in §2.2 were measured on chemistry and computational-
+linguistics *papers*, so the κ figures transfer to these definitions only as far
+as the category shapes do. §9 records this as a weakness in the evidence base,
+not as something the exemplars fix.
 
-### 3.2 Worked example — `mechanism`, the weakest category
+Pairwise separations live in §3.3, not inside each definition, so that a
+boundary is stated once rather than twice and cannot drift between two entries.
 
-> **Cue.** The statement links two or more named things with a causal or
-> structural connective — *because, causes, leads to, is composed of, trades
-> off against* — such that removing the connective would lose the point.
->
-> **Does not fire when:** the statement names only one thing and says what it
-> means (→ `definition`); the connective joins a condition to an instruction
-> (→ `procedure`); the subject is merely *called* a model — a pricing model, a
-> data model — since the word in the name is not the test; the statement asserts
-> a single proposition with no relation between parts (→ `fact` or `finding`).
->
-> **Exemplars.** "Larger batches raise throughput but lengthen tail latency,
-> because queued requests wait for the slowest member." / "the reason onboarding
-> drags is that every new hire re-derives the same context"
->
-> **vs `tradeoff`:** `tradeoff` requires two named quantities moving in
-> *opposite* directions. If only one direction is stated, it is `mechanism`.
->
-> **Expected reliability:** lowest in the set. Its anchor category measured
-> κ 0.43. Treat disagreement here as expected, not as a defect.
+### 3.2 The eighteen definitions
 
-### 3.3 `decision` has no modal to key on
+---
 
-`[DESIGN]` The other three `rule` labels share one surface cue: a deontic modal
-(*must*, *may*, *must not*). `decision` has none — "we adopted per-change
-branches" carries no modal at all — so it cannot inherit that cue and needs its
-own:
+#### `observation` → `case` · anchor κ 0.79
 
-> **Cue.** A choice is reported as settled, and it governs what happens after
-> it. Typically past-tense and agentive: *adopted*, *chose*, *approved*,
-> *standardised on*, *agreed to*.
+> **Cue.** Reports something seen or measured on a particular occasion, without
+> claiming it holds in general. Usually carries a time, a run, a period, or a
+> named instance.
 >
-> **Does not fire when:** the statement merely records that something occurred
-> without a choice being made (→ `event`); the choice is proposed rather than
-> settled (→ `recommendation`); an explicit modal is present, in which case the
-> deontic labels take it.
+> **Excludes:** a statement that generalizes past the instance (→ `finding`);
+> the description of how an investigation was set up (→ `study`); a judgment
+> drawn from what was seen (→ `conclusion`).
 >
-> **vs `event`:** an event happened; a decision was *chosen* and constrains
-> later action. "The build failed on Tuesday" is an event. "We standardised on
-> the new build system" is a decision.
->
-> **vs `obligation`:** an obligation states a standing requirement in modal
-> form; a decision states that a requirement was established. If both readings
-> fit, the modal wins.
+> **Doc.** "Realized volatility on the book exceeded the model's 99th-percentile
+> band on three consecutive sessions in March 2026."
+> **Chat.** "loss spiked right after we bumped LR to 3e-4, twice in a row"
 
-The remaining sixteen definitions follow this shape.
+#### `event` → `case`
+
+> **Cue.** Something happened, with a time and an actor or subject. No choice is
+> being reported and nothing is being measured.
+>
+> **Excludes:** a settled choice (→ `decision`); a measurement taken (→
+> `observation`); a recurring or general state of affairs (→ `fact`).
+>
+> **Doc.** "The prime broker raised margin requirements on the fund's short book
+> on 14 March 2026."
+> **Chat.** "training run 47 OOM'd overnight on node 3"
+
+#### `study` → `case` · anchor κ 0.65
+
+> **Cue.** Describes how one investigation was set up or carried out — sample,
+> period, universe, seeds, ablation arms, controls. The design, not the outcome.
+>
+> **Excludes:** the result the investigation produced (→ `finding`); reusable
+> instructions meant to be followed again (→ `procedure`); a single measurement
+> (→ `observation`).
+>
+> **Doc.** "The signal was backtested on US equities, 1998–2024, with 5bp of
+> one-way cost and monthly rebalancing, excluding names below $50m ADV."
+> **Chat.** "we ran it 3 seeds at 7B and 13B with the data mix held fixed"
+
+---
+
+#### `obligation` → `rule`
+
+> **Cue.** A deontic modal of requirement — *must*, *shall*, *is required to* —
+> with someone accountable to it.
+>
+> **Excludes:** a requirement stated in the negative (→ `prohibition`); an
+> option rather than a requirement (→ `permission`); advice with no
+> accountability (→ `recommendation`).
+>
+> **Doc.** "Positions must be marked to market daily before 17:00 ET."
+> **Chat.** "every eval run has to log its seed and commit hash"
+
+#### `prohibition` → `rule`
+
+> **Cue.** A deontic modal of forbidding — *must not*, *may not*, *never*, *is
+> prohibited from*.
+>
+> **Excludes:** a positively-stated requirement, even where the effect is
+> similar (→ `obligation`); a warning about consequences with no forbidding
+> force (→ `mechanism` or `finding`).
+>
+> **Doc.** "The desk may not carry overnight exposure in names below $50m ADV."
+> **Chat.** "never train on anything that overlaps the eval split"
+
+#### `permission` → `rule`
+
+> **Cue.** A deontic modal of allowance — *may*, *is permitted to*, *is allowed
+> to* — granting an option rather than compelling.
+>
+> **Excludes:** a requirement (→ `obligation`); advice to take the option (→
+> `recommendation`).
+>
+> **Doc.** "Analysts may exceed the intraday gross limit provided the book is
+> flat at close."
+> **Chat.** "you can use the shared A100s on weekends without booking"
+
+#### `decision` → `rule`
+
+> **Cue.** A choice reported as settled, which governs what happens after it.
+> Typically past-tense and agentive: *adopted*, *chose*, *approved*,
+> *standardised on*, *agreed to*. This is the one `rule` label with no deontic
+> modal to key on.
+>
+> **Excludes:** something that merely occurred, with no choice made (→ `event`);
+> a choice still being proposed (→ `recommendation`); a statement carrying an
+> explicit modal, which the deontic labels take instead.
+>
+> **Doc.** "The committee standardised on daily rebalancing after the turnover
+> analysis."
+> **Chat.** "we went with LoRA instead of a full fine-tune"
+
+---
+
+#### `procedure` → `method` · anchor κ 0.74
+
+> **Cue.** Ordered steps for bringing something about, meant to be repeated.
+> Imperative or sequential.
+>
+> **Excludes:** a named approach with no steps given (→ `technique`); one
+> investigation that was run (→ `study`); a constraint on how something may be
+> done (→ `obligation`).
+>
+> **Doc.** "To build the factor: winsorize at 1%, z-score cross-sectionally,
+> then neutralize by sector and size."
+> **Chat.** "to repro: pull the 40k checkpoint, run eval.py with --temp 0"
+
+#### `technique` → `method` · anchor κ 0.76
+
+> **Cue.** Names an approach, method or device used to achieve something,
+> without laying out steps.
+>
+> **Excludes:** an ordered step list (→ `procedure`); an explanation of *why*
+> the approach works (→ `mechanism`); advice to adopt it (→ `recommendation`).
+>
+> **Doc.** "Volatility targeting scales position size inversely to trailing
+> realized volatility."
+> **Chat.** "we use gradient checkpointing to fit the batch on one node"
+
+#### `recommendation` → `method`
+
+> **Cue.** Advice on what ought to be done, with no requirement force and no
+> report that it was settled. Hedged: *should*, *prefer*, *is worth*, *probably
+> want to*.
+>
+> **Excludes:** a requirement someone is accountable to (→ `obligation`); a
+> choice already made (→ `decision`); a bare description of an approach (→
+> `technique`).
+>
+> **Doc.** "Practitioners should prefer shrinkage estimators when the sample
+> covariance matrix is near-singular."
+> **Chat.** "you probably want to warm up the LR over the first 2k steps"
+
+---
+
+#### `definition` → `concept` · anchor κ 0.81
+
+> **Cue.** Fixes what a term means. The grammatical centre is *X is / means /
+> refers to / is defined as Y*.
+>
+> **Excludes:** a contingent statement that could turn out false (→ `fact`); an
+> explanation of why something works (→ `mechanism`); a contrast drawn between
+> two terms (→ `distinction`).
+>
+> **Doc.** "The Sharpe ratio is excess return divided by the standard deviation
+> of excess return."
+> **Chat.** "perplexity is just exp of the mean negative log-likelihood"
+
+#### `distinction` → `concept`
+
+> **Cue.** Contrasts two or more terms in order to fix the boundary between
+> them. Both sides are named and the difference is the payload.
+>
+> **Excludes:** a single term being defined (→ `definition`); two quantities
+> moving against each other (→ `tradeoff`); a claim that one is better (→
+> `finding` or `conclusion`).
+>
+> **Doc.** "Realized volatility is measured from past returns; implied
+> volatility is backed out of option prices."
+> **Chat.** "RAG retrieves at query time; fine-tuning bakes it into the weights"
+
+#### `background` → `concept` · anchor κ 0.87
+
+> **Cue.** Context a reader needs, presented as generally accepted and not as
+> the author's own contribution or measurement.
+>
+> **Excludes:** a term being defined (→ `definition`); a specific checkable
+> proposition (→ `fact`); a result from the present work (→ `finding`).
+>
+> **Doc.** "Cross-sectional momentum has been documented in equity markets since
+> Jegadeesh and Titman."
+> **Chat.** "transformers displaced RNNs for sequence modelling around 2018"
+
+---
+
+#### `mechanism` → `model` · anchor κ 0.43 — weakest category in the set
+
+> **Cue.** Links two or more named things with a causal or structural connective
+> — *because*, *causes*, *leads to*, *is composed of* — such that removing the
+> connective would lose the point.
+>
+> **Excludes:** one thing being named and defined (→ `definition`); a connective
+> joining a condition to an instruction (→ `procedure`); two quantities moving
+> in opposite directions (→ `tradeoff`); a single proposition with no relation
+> between parts (→ `fact` or `finding`). Does **not** fire merely because the
+> subject is *called* a model — a pricing model, a risk model, a language model.
+> The word in the name is not the test.
+>
+> **Doc.** "Momentum persists at 3–12 month horizons because investors underreact
+> to news, so prices adjust gradually rather than at once."
+> **Chat.** "loss spikes because the LR schedule restarts before the optimizer
+> state is reset"
+>
+> **Expected reliability:** lowest in the set. Its anchor measured κ 0.43.
+> Disagreement here is expected, not a defect.
+
+#### `tradeoff` → `model`
+
+> **Cue.** Two named quantities move in *opposite* directions. Both directions
+> are stated.
+>
+> **Excludes:** only one direction given (→ `mechanism`); two terms contrasted
+> in meaning rather than in quantity (→ `distinction`); a measured comparison
+> from this work's data (→ `finding`).
+>
+> **Doc.** "Increasing leverage raises expected return and raises drawdown risk
+> roughly in proportion."
+> **Chat.** "bigger batch means faster epochs but worse generalization"
+
+---
+
+#### `finding` → `claim` · anchor κ 0.78
+
+> **Cue.** A result the present work's data supports, generalizing beyond any
+> single instance. Usually carries a number or a comparison.
+>
+> **Excludes:** a single measured instance (→ `observation`); a judgment drawn
+> from results (→ `conclusion`); an externally settled proposition (→ `fact`);
+> how the investigation was set up (→ `study`).
+>
+> **Doc.** "The signal earned 0.82 Sharpe net of costs over the full sample, and
+> 0.61 out of sample."
+> **Chat.** "4-bit quantization cost us about 2 points on MMLU"
+
+#### `conclusion` → `claim` · anchor κ 0.89 — highest measured
+
+> **Cue.** What is *taken from* results — an inference, judgment or implication
+> drawn rather than measured. Often signalled by *therefore*, *so*, *this
+> suggests*, *we conclude*.
+>
+> **Excludes:** the measured result itself (→ `finding`); a recommendation for
+> action (→ `recommendation`); a causal explanation (→ `mechanism`).
+>
+> **Doc.** "The strategy is therefore not viable at institutional scale, given
+> the capacity constraint the turnover implies."
+> **Chat.** "so the scaling law basically breaks past 70B for this data mix"
+
+#### `fact` → `claim`
+
+> **Cue.** A checkable proposition that does not come from the present work's
+> data and could have been otherwise.
+>
+> **Excludes:** a result from this work (→ `finding`); a nominal or definitional
+> statement (→ `definition`); accepted context framing the work (→ `background`).
+>
+> **Doc.** "VIX is calculated from SPX option prices across the two nearest
+> expiries."
+> **Chat.** "that model's context window is 128k"
+
+### 3.3 Pairwise separations
+
+`[VERIFIED]` Pairwise distinction rules are the bulk of a working codebook, not
+a garnish: the scheme that reached κ 0.71 shipped **75** of them alongside a
+decision tree, in 111 pages of guidelines.
+
+`[DESIGN]` The eighteen rules below cover the pairs judged to genuinely collide.
+Pairs not listed were judged non-colliding — that judgment is mine and is worth
+challenging; a pair that turns out to collide in practice should be added here
+rather than patched into a definition.
+
+| Pair | The test that separates them |
+|---|---|
+| `observation` / `finding` | Instance-bound or general? An observation reports one occasion; a finding claims it holds beyond that occasion. |
+| `finding` / `conclusion` | Measured or inferred? A finding is what the data shows; a conclusion is what you take from it. |
+| `finding` / `fact` | Whose data? A finding comes from the present work; a fact is settled elsewhere. |
+| `observation` / `event` | Was anything measured? An observation records a quantity or behaviour; an event records that something occurred. |
+| `event` / `decision` | Was a choice made? An event happened to you; a decision was chosen and constrains later action. |
+| `decision` / `obligation` | Is there a modal? An obligation states a standing requirement in modal form; a decision states one was established. If both fit, the modal wins. |
+| `decision` / `recommendation` | Settled or proposed? A decision is closed; a recommendation is still advice. |
+| `obligation` / `prohibition` | Polarity of the modal. Requirement versus forbidding. |
+| `obligation` / `permission` | Compelled or optional? *Must* versus *may*. |
+| `procedure` / `technique` | Are there steps? A procedure gives an order to follow; a technique names an approach. |
+| `procedure` / `study` | Repeatable or historical? A procedure is meant to be run again; a study is one investigation that was run. |
+| `recommendation` / `obligation` | Is anyone accountable? Advice can be ignored without violation; an obligation cannot. |
+| `definition` / `background` | Fixing a term or setting the scene? A definition pins meaning; background situates the reader. |
+| `definition` / `distinction` | One term or two? A definition fixes one; a distinction separates two. |
+| `mechanism` / `tradeoff` | How many directions? A tradeoff needs two quantities moving oppositely; one direction is a mechanism. |
+| `mechanism` / `finding` | Relation or result? A mechanism asserts how things connect; a finding reports what was measured. |
+| `background` / `fact` | Framing or proposition? Background is accepted context; a fact is a specific checkable statement. |
+| `distinction` / `tradeoff` | Meaning or quantity? A distinction separates what terms mean; a tradeoff relates how quantities move. |
 
 ---
 
@@ -514,6 +753,12 @@ Everything in this spec, sorted by what backs it.
   This classifier types short statements shown without their document. Whether
   agreement transfers up or down is untested — a claim pointing one way was
   refuted 0-3.
+- The definitions in §3.2 use quantitative-finance and LLM/ML exemplars, while
+  every anchor category in §2.2 was measured on chemistry and computational-
+  linguistics papers. The κ figures transfer only as far as the category
+  shapes do; they were not measured on these exemplars or these domains.
+- The eighteen pairwise separations in §3.3 cover the pairs judged to collide.
+  That judgment is unmeasured. The scheme that reached κ 0.71 shipped 75 rules.
 - The reliability numbers in §2.2 are one-vs-rest binary collapses, mechanically
   higher than the full multi-way agreement of the same scheme (κ 0.50–0.57).
   They rank categories against each other reliably; they are not absolute
