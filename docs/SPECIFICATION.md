@@ -57,7 +57,7 @@ this", never "is this correct". Epistemic status lives elsewhere.
 
 ## 2. The taxonomy
 
-Seven coarse types. Fourteen fine labels, each mapping to exactly one coarse
+Six coarse types. Sixteen fine labels, each mapping to exactly one coarse
 type. The mapping is a lookup table, not a judgment.
 
 ### 2.1 Coarse types
@@ -68,8 +68,7 @@ type. The mapping is a lookup table, not a judgment.
 | `rule` | What must, may, or must not happen? |
 | `method` | How is something done? |
 | `concept` | What does this term mean? |
-| `model` | How do these things relate? |
-| `claim` | What is asserted to be so? |
+| `model` | What drives this, how is it built, what does it take for granted? |
 | `general` | — assigned by code when no test fires |
 
 ### 2.2 Fine labels, with measured reliability where it exists
@@ -91,9 +90,11 @@ inter-annotator agreement figure. `κ` below is the measured agreement for the
 | `definition` | concept | **0.81** | CoreSC `Object` [VERIFIED] |
 | `distinction` | concept | — | [DESIGN] |
 | `background` | concept | **0.87** | CoreSC `Background` [VERIFIED] |
-| `mechanism` | model | **0.43** | CoreSC `Model` [VERIFIED] — **weakest measured category** |
-| `finding` | claim | **0.78** | CoreSC `Result` [VERIFIED] — absorbed `conclusion` (§2.5) |
-| `fact` | claim | — | [DESIGN] |
+| `driver` | model | — | [DESIGN] — replaces `mechanism`; carries `status` (§2.6) |
+| `structure` | model | — | [DESIGN] — compositional cue (*is composed of*) |
+| `formula` | model | — | [DESIGN] — an equation is the most surface-detectable cue in the set |
+| `assumption` | model | — | [DESIGN] — marker words (*assumes*, *conditional on*) |
+| `dependency` | model | — | [DESIGN] — marker words (*requires*, *depends on*) |
 
 Source for all CoreSC figures: Liakata et al., LREC 2010, per-category
 one-vs-rest Cohen's κ, 41 chemistry/biochemistry papers, expert annotators.
@@ -168,6 +169,45 @@ definition below therefore tightens its exclusions against `fact` and
 `observation` rather than loosening them. Whether that holds is a re-test, not a
 claim.
 
+### 2.6 `status`, and why `claim` no longer exists
+
+`[DESIGN]` §1 says this classifier does not judge truth and that epistemic
+status lives elsewhere. An earlier revision nonetheless had a `claim` coarse type
+whose three labels — `fact`, `finding`, `proposition` — differed mainly by *how
+established* a statement was. That contradicted the contract.
+
+They are now one field on `driver`:
+
+```
+status: proposition | finding | fact
+```
+
+- `proposition` — put forward, not established. Hedged: *might*, *could*, *we
+  propose*, *worth testing*.
+- `finding` — established by the work at hand. Carries its own evidence.
+- `fact` — settled outside this work.
+
+The gain is that a driver's lifecycle stops being a retyping. "More cars in the
+lot predicts stronger same-store sales" begins as `proposition`, becomes
+`finding` when the backtest holds, and may harden to `fact`. As three separate
+types that path required changing what the statement *is*; as a status it is an
+update, which is what actually happened — and it makes "show me every driver
+still at `proposition`" a query rather than an archaeology exercise.
+
+`[DESIGN]` **One field, not two.** `fact` and `finding` differ by provenance
+(settled elsewhere versus established here) as much as by maturity, so there is
+an argument for splitting `status` and `provenance` into separate fields.
+`[VERIFIED]` Against that: the closest published two-axis design assumed its
+axes were orthogonal and measured them statistically dependent (Fisher's exact,
+p<0.0001), collapsing into a few dominant cells. Start with one field; split only
+if the data demands it.
+
+**Known gap.** A measured result that drives nothing — "the signal earned 0.82
+Sharpe net of costs over the full sample" — has no obvious home now. It is not a
+single-occasion `observation`, and `claim` was where it used to go. Such
+statements will fall to `general`. `general`'s share is the metric that will
+show whether this matters (§7).
+
 ---
 
 ## 3. Definitions
@@ -191,7 +231,7 @@ examples still yielded only κ 0.50–0.57 (CoreSC).
 
 ### 3.1 Required shape for every definition
 
-Each of the fourteen fine labels carries:
+Each of the sixteen fine labels carries:
 
 - **Cue** — the surface pattern, stated so a reader can check it without
   inferring intent.
@@ -208,7 +248,7 @@ not as something the exemplars fix.
 Pairwise separations live in §3.3, not inside each definition, so that a
 boundary is stated once rather than twice and cannot drift between two entries.
 
-### 3.2 The fourteen definitions
+### 3.2 The sixteen definitions
 
 ---
 
@@ -364,66 +404,83 @@ boundary is stated once rather than twice and cannot drift between two entries.
 
 ---
 
-#### `mechanism` → `model` · anchor κ 0.43 — weakest category in the set
+#### `driver` → `model`
 
-> **Cue.** Links two or more named things with a causal or structural connective
-> — *because*, *causes*, *leads to*, *is composed of* — such that removing the
-> connective would lose the point.
+> **Cue.** Asserts that one thing causes, predicts, or explains another, as the
+> reason a model or conclusion works. Answers "why should this hold?"
 >
-> **Excludes:** one thing being named and defined (→ `definition`); a connective
-> joining a condition to an instruction (→ `procedure`); two quantities moving
-> in opposite directions (→ `tradeoff`); a single proposition with no relation
-> between parts (→ `fact` or `finding`). Does **not** fire merely because the
-> subject is *called* a model — a pricing model, a risk model, a language model.
-> The word in the name is not the test.
+> **Excludes:** how the thing is built or sourced (→ `structure`); the equation
+> that computes it (→ `formula`); what must be true for it to hold (→
+> `assumption`); what it needs in order to run (→ `dependency`); a single
+> measured occasion (→ `observation`).
 >
-> **Doc.** "Momentum persists at 3–12 month horizons because investors underreact
-> to news, so prices adjust gradually rather than at once."
-> **Chat.** "loss spikes because the LR schedule restarts before the optimizer
-> state is reset"
+> **Carries `status`** (§2.6): `proposition` when hedged or untested, `finding`
+> when this work established it, `fact` when settled elsewhere. The status is not
+> part of choosing this label — a driver is a driver whether or not it is proven.
 >
-> **Expected reliability:** lowest in the set. Its anchor measured κ 0.43.
-> Disagreement here is expected, not a defect.
+> **Doc.** "Parking-lot vehicle counts predict same-store sales, so changes in
+> counts lead reported revenue by roughly one quarter."
+> **Chat.** "the whole thesis is more cars means the store is doing better"
+
+#### `structure` → `model`
+
+> **Cue.** How the thing is composed, assembled, or sourced — named parts and
+> how they fit. *Is composed of*, *consists of*, *is built from*, *comes from*.
+>
+> **Excludes:** why it works (→ `driver`); the arithmetic (→ `formula`); steps a
+> reader should follow (→ `procedure`); something the build merely needs present
+> (→ `dependency`).
+>
+> **Doc.** "Parking-lot counts are derived from daily satellite imagery, matched
+> to store locations by geofence and aggregated to ticker level."
+> **Chat.** "signal's built from the vendor feed plus our own geofences"
+
+#### `formula` → `model`
+
+> **Cue.** States how a quantity is computed — an equation, or an explicit
+> arithmetic definition in prose.
+>
+> **Excludes:** a term's meaning with no computation given (→ `definition`); a
+> reported value rather than the rule producing it (→ `observation`); ordered
+> instructions to a reader (→ `procedure`).
+>
+> **Doc.** "Signal = z-score of the trailing 30-day change in vehicle count,
+> winsorized at 1% and neutralized by sector."
+> **Chat.** "it's just zscore(30d delta) then sector demean"
+
+#### `assumption` → `model`
+
+> **Cue.** States something taken for granted for the thing to hold. Marker
+> words: *assumes*, *presupposes*, *conditional on*, *holds only if*, *provided
+> that*.
+>
+> **Excludes:** something needed to run rather than to be true (→ `dependency`);
+> a limit on where it applies, stated as a result (→ `observation` or `driver`);
+> a rule someone must follow (→ `obligation`).
+>
+> **Doc.** "The signal assumes foot traffic converts to revenue at a stable rate
+> across store formats."
+> **Chat.** "this only works if the conversion rate is roughly constant"
+>
+> `[DESIGN]` High value for this corpus specifically: quantitative models fail
+> at their assumptions far more often than at their arithmetic, and assumptions
+> are usually the least recorded part of a model.
+
+#### `dependency` → `model`
+
+> **Cue.** States that something is required, relied on, or a prerequisite.
+> Marker words: *requires*, *depends on*, *needs*, *is a prerequisite for*.
+>
+> **Excludes:** something taken to be true rather than needed to run (→
+> `assumption`); a component the thing is made of (→ `structure`); a rule
+> compelling someone to supply it (→ `obligation`).
+>
+> **Doc.** "Signal construction requires the earnings calendar in order to
+> suppress positions into scheduled announcements."
+> **Chat.** "needs the earnings cal, otherwise we trade straight into prints"
 
 
----
 
-#### `finding` → `claim` · anchor κ 0.78
-
-> **Cue.** What the present work's data establishes — either the measured result
-> itself or the inference drawn directly from it. Usually carries a number, a
-> comparison, or an explicit *therefore / so / this suggests*.
->
-> **Excludes:** a single measured instance with no claim beyond it (→
-> `observation`); a proposition settled outside this work (→ `fact`); how the
-> investigation was set up (→ `study` — removed, so such statements go to
-> `general`); advice about what to do (→ `recommendation`); a causal relation
-> asserted between named things (→ `mechanism`).
->
-> **Absorption guard.** `[MEASURED]` `finding` took 24% of all assignments in the
-> collision test, nearly double the next label, and was behaving as a de-facto
-> residual. It fires only when the statement's own data or analysis is what makes
-> it true. If the statement would remain true with this work deleted, it is
-> `fact`. If it reports one occasion rather than a result, it is `observation`.
->
-> **Doc.** "The signal earned 0.82 Sharpe net of costs over the full sample and
-> 0.61 out of sample; the strategy is therefore not viable at institutional scale
-> given the implied capacity."
-> **Chat.** "4-bit quantization cost us about 2 points on MMLU, so the memory win
-> isn't worth it for the eval models"
-
-
-#### `fact` → `claim`
-
-> **Cue.** A checkable proposition that does not come from the present work's
-> data and could have been otherwise.
->
-> **Excludes:** a result from this work (→ `finding`); a nominal or definitional
-> statement (→ `definition`); accepted context framing the work (→ `background`).
->
-> **Doc.** "VIX is calculated from SPX option prices across the two nearest
-> expiries."
-> **Chat.** "that model's context window is 128k"
 
 ### 3.3 Pairwise separations
 
@@ -438,8 +495,6 @@ rather than patched into a definition.
 
 | Pair | The test that separates them |
 |---|---|
-| `observation` / `finding` | Instance-bound or general? An observation reports one occasion; a finding claims it holds beyond that occasion. |
-| `finding` / `fact` | Whose data? A finding comes from the present work; a fact is settled elsewhere. |
 | `observation` / `event` | Was anything measured? An observation records a quantity or behaviour; an event records that something occurred. |
 | `event` / `decision` | Was a choice made? An event happened to you; a decision was chosen and constrains later action. |
 | `decision` / `obligation` | Is there a modal? An obligation states a standing requirement in modal form; a decision states one was established. If both fit, the modal wins. |
@@ -447,11 +502,15 @@ rather than patched into a definition.
 | `obligation` / `prohibition` | Polarity of the modal. Requirement versus forbidding. |
 | `procedure` / `technique` | Are there steps? A procedure gives an order to follow; a technique names an approach. |
 | `recommendation` / `obligation` | Is anyone accountable? Advice can be ignored without violation; an obligation cannot. |
+| `driver` / `assumption` | Is it the reason it works, or a precondition for it working? A driver explains; an assumption is what must hold for the explanation to survive. |
+| `driver` / `observation` | Does it generalize? A driver claims a standing relation; an observation reports one occasion. |
+| `structure` / `formula` | Parts or arithmetic? Structure names components; a formula computes a value. |
+| `structure` / `dependency` | Inside or outside? Structure is what the thing is made of; a dependency is something separate it needs. |
+| `assumption` / `dependency` | Must be TRUE, or must be PRESENT? An assumption is a belief the model rests on; a dependency is an input it consumes. |
+| `formula` / `definition` | Does it compute? A formula produces a number; a definition fixes a meaning. |
 | `definition` / `background` | Fixing a term or setting the scene? A definition pins meaning; background situates the reader. |
 | `definition` / `distinction` | One term or two? A definition fixes one; a distinction separates two. |
 | `obligation` / `procedure` | `[MEASURED]` The largest cross-coarse leak in the collision test (6 confusions). A procedure tells you the steps; an obligation tells you that doing it is required. A numbered list with a *must* in it is an obligation. |
-| `mechanism` / `finding` | Relation or result? A mechanism asserts how things connect; a finding reports what was measured. |
-| `background` / `fact` | Framing or proposition? Background is accepted context; a fact is a specific checkable statement. |
 
 ---
 
