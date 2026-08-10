@@ -57,7 +57,7 @@ this", never "is this correct". Epistemic status lives elsewhere.
 
 ## 2. The taxonomy
 
-Six coarse types. Sixteen fine labels, each mapping to exactly one coarse
+Six coarse types. Fifteen fine labels, each mapping to exactly one coarse
 type. The mapping is a lookup table, not a judgment.
 
 ### 2.1 Coarse types
@@ -85,13 +85,12 @@ inter-annotator agreement figure. `κ` below is the measured agreement for the
 | `prohibition` | rule | — | [DESIGN] — deontic modal is a surface cue |
 | `decision` | rule | — | [DESIGN] — a settled choice governs what happens next; note it is the one `rule` label with NO deontic modal to key on (§3.3) |
 | `procedure` | method | **0.74** | CoreSC `Method` [VERIFIED] |
-| `technique` | method | **0.76** | AZ-II `OWNMTHD` [VERIFIED] |
 | `recommendation` | method | — | [DESIGN] |
 | `definition` | concept | **0.81** | CoreSC `Object` [VERIFIED] |
 | `distinction` | concept | — | [DESIGN] |
 | `background` | concept | **0.87** | CoreSC `Background` [VERIFIED] |
-| `driver` | model | — | [DESIGN] — replaces `mechanism`; carries `status` (§2.6) |
-| `structure` | model | — | [DESIGN] — compositional cue (*is composed of*) |
+| `principle` | model | — | [DESIGN] — the causal idea the model runs on; carries `status` (§2.6) |
+| `architecture` | model | — | [DESIGN] — compositional cue (*is composed of*) |
 | `formula` | model | — | [DESIGN] — an equation is the most surface-detectable cue in the set |
 | `assumption` | model | — | [DESIGN] — marker words (*assumes*, *conditional on*) |
 | `dependency` | model | — | [DESIGN] — marker words (*requires*, *depends on*) |
@@ -112,7 +111,7 @@ CoreSC measured `Conclusion` 0.89, `Background` 0.87, `Object` 0.81,
 Three consequences, all binding on this spec:
 
 1. The `model` coarse type is the known weak point. Its anchor is the lowest
-   measured category in the scheme. §3 therefore defines `mechanism` as a
+   measured category in the scheme. §3 therefore defines `principle` as a
    surface test (does the statement contain a causal or structural connective
    linking two named things) rather than as a judgment about explanatory intent.
 2. Any category that cannot be written as a surface test should be expected to
@@ -155,7 +154,7 @@ Two gaps this leaves, both routed to `general`:
 
 1. **`model` now has exactly one fine label.** For that branch the fine and
    coarse tiers carry identical information — a degenerate tier, harmless but
-   worth knowing. If `mechanism` is ever cut, `model` goes with it.
+   worth knowing. (Superseded: `model` now carries five labels — see §2.7.)
 2. **Permission-shaped statements have no home.** "Analysts may exceed the
    intraday limit provided the book is flat at close" carries a deontic modal but
    is neither required nor prohibited. It will land in `general`, or be pulled
@@ -176,7 +175,7 @@ status lives elsewhere. An earlier revision nonetheless had a `claim` coarse typ
 whose three labels — `fact`, `finding`, `proposition` — differed mainly by *how
 established* a statement was. That contradicted the contract.
 
-They are now one field on `driver`:
+They are now one field on `principle`:
 
 ```
 status: proposition | finding | fact
@@ -208,6 +207,37 @@ single-occasion `observation`, and `claim` was where it used to go. Such
 statements will fall to `general`. `general`'s share is the metric that will
 show whether this matters (§7).
 
+### 2.7 What the second collision test changed
+
+`[MEASURED]` The restructure in §2.5–2.6 was re-tested on 80 fresh statements
+with four blind raters
+(`research/2026-08-10-codebook-collision-test-v2.md`). Agreement rose on both
+tiers: fine α 0.778 → **0.858**, coarse α 0.866 → **0.927**, unanimity 0.67 →
+0.78. No statement fell outside the taxonomy (0 of 320), so dissolving the
+`claim` coarse type cost nothing measurable — `observation` absorbed the
+results-shaped statements at 23% of assignments but with α 0.983, i.e.
+consistently rather than sloppily.
+
+Three changes follow from that test:
+
+- **`technique` removed**, merged into `procedure`. It measured α 0.588, the
+  weakest label, with six confusions against `procedure`. This is the one change
+  the data made on its own.
+- **`driver` → `principle`.** `driver` measured α 0.623 and collided with
+  `structure` twenty times — the largest collision in the test. `[DESIGN]` The
+  likely cause is the same ambiguity that sank `mechanism`: in engineering, a
+  *driver* is a component, so the label read as machinery rather than as the
+  causal idea. `principle` has no such reading. Whether the rename fixes the
+  boundary is a re-test, not a claim.
+- **`structure` → `architecture`.** `[DESIGN]` Naming only. `architecture` is
+  the native word in ML model cards; `structure` was the more neutral term for
+  portfolios. The ML reading was judged to carry more weight for this corpus.
+
+`[DESIGN]` One risk this revision introduces: `principle` can be read
+normatively. "Prefer small reversible steps" is a principle in ordinary English
+but is advice, not an explanation — §3.3 now carries an explicit
+`principle`/`obligation` separation for exactly that.
+
 ---
 
 ## 3. Definitions
@@ -231,7 +261,7 @@ examples still yielded only κ 0.50–0.57 (CoreSC).
 
 ### 3.1 Required shape for every definition
 
-Each of the sixteen fine labels carries:
+Each of the fifteen fine labels carries:
 
 - **Cue** — the surface pattern, stated so a reader can check it without
   inferring intent.
@@ -248,7 +278,7 @@ not as something the exemplars fix.
 Pairwise separations live in §3.3, not inside each definition, so that a
 boundary is stated once rather than twice and cannot drift between two entries.
 
-### 3.2 The sixteen definitions
+### 3.2 The fifteen definitions
 
 ---
 
@@ -300,7 +330,7 @@ boundary is stated once rather than twice and cannot drift between two entries.
 >
 > **Excludes:** a positively-stated requirement, even where the effect is
 > similar (→ `obligation`); a warning about consequences with no forbidding
-> force (→ `mechanism` or `finding`).
+> force (→ `principle`).
 >
 > **Doc.** "The desk may not carry overnight exposure in names below $50m ADV."
 > **Chat.** "never train on anything that overlaps the eval split"
@@ -325,28 +355,22 @@ boundary is stated once rather than twice and cannot drift between two entries.
 
 #### `procedure` → `method` · anchor κ 0.74
 
-> **Cue.** Ordered steps for bringing something about, meant to be repeated.
-> Imperative or sequential.
+> **Cue.** How something is done — either ordered steps to follow, or a named
+> approach used to achieve an end. `[MEASURED]` These were two labels
+> (`procedure` and `technique`) until the second collision test measured
+> `technique` at α 0.588, the weakest in the set, colliding with `procedure`
+> six times. Merged.
 >
-> **Excludes:** a named approach with no steps given (→ `technique`); one
-> investigation that was run (→ `study`); a constraint on how something may be
-> done (→ `obligation`).
+> **Excludes:** why the approach works (→ `principle`); how a thing is assembled
+> or sourced (→ `architecture`); the arithmetic that computes a value (→
+> `formula`); one investigation that was run (→ `observation`); a constraint
+> someone is accountable to (→ `obligation`); advice about which approach to
+> pick (→ `recommendation`).
 >
 > **Doc.** "To build the factor: winsorize at 1%, z-score cross-sectionally,
 > then neutralize by sector and size."
-> **Chat.** "to repro: pull the 40k checkpoint, run eval.py with --temp 0"
-
-#### `technique` → `method` · anchor κ 0.76
-
-> **Cue.** Names an approach, method or device used to achieve something,
-> without laying out steps.
->
-> **Excludes:** an ordered step list (→ `procedure`); an explanation of *why*
-> the approach works (→ `mechanism`); advice to adopt it (→ `recommendation`).
->
-> **Doc.** "Volatility targeting scales position size inversely to trailing
-> realized volatility."
 > **Chat.** "we use gradient checkpointing to fit the batch on one node"
+
 
 #### `recommendation` → `method`
 
@@ -356,7 +380,7 @@ boundary is stated once rather than twice and cannot drift between two entries.
 >
 > **Excludes:** a requirement someone is accountable to (→ `obligation`); a
 > choice already made (→ `decision`); a bare description of an approach (→
-> `technique`).
+> `procedure`).
 >
 > **Doc.** "Practitioners should prefer shrinkage estimators when the sample
 > covariance matrix is near-singular."
@@ -370,7 +394,7 @@ boundary is stated once rather than twice and cannot drift between two entries.
 > refers to / is defined as Y*.
 >
 > **Excludes:** a contingent statement that could turn out false (→ `fact`); an
-> explanation of why something works (→ `mechanism`); a contrast drawn between
+> explanation of why something works (→ `principle`); a contrast drawn between
 > two terms (→ `distinction`).
 >
 > **Doc.** "The Sharpe ratio is excess return divided by the standard deviation
@@ -404,12 +428,12 @@ boundary is stated once rather than twice and cannot drift between two entries.
 
 ---
 
-#### `driver` → `model`
+#### `principle` → `model`
 
 > **Cue.** Asserts that one thing causes, predicts, or explains another, as the
 > reason a model or conclusion works. Answers "why should this hold?"
 >
-> **Excludes:** how the thing is built or sourced (→ `structure`); the equation
+> **Excludes:** how the thing is built or sourced (→ `architecture`); the equation
 > that computes it (→ `formula`); what must be true for it to hold (→
 > `assumption`); what it needs in order to run (→ `dependency`); a single
 > measured occasion (→ `observation`).
@@ -422,12 +446,12 @@ boundary is stated once rather than twice and cannot drift between two entries.
 > counts lead reported revenue by roughly one quarter."
 > **Chat.** "the whole thesis is more cars means the store is doing better"
 
-#### `structure` → `model`
+#### `architecture` → `model`
 
 > **Cue.** How the thing is composed, assembled, or sourced — named parts and
 > how they fit. *Is composed of*, *consists of*, *is built from*, *comes from*.
 >
-> **Excludes:** why it works (→ `driver`); the arithmetic (→ `formula`); steps a
+> **Excludes:** why it works (→ `principle`); the arithmetic (→ `formula`); steps a
 > reader should follow (→ `procedure`); something the build merely needs present
 > (→ `dependency`).
 >
@@ -455,7 +479,7 @@ boundary is stated once rather than twice and cannot drift between two entries.
 > that*.
 >
 > **Excludes:** something needed to run rather than to be true (→ `dependency`);
-> a limit on where it applies, stated as a result (→ `observation` or `driver`);
+> a limit on where it applies, stated as a result (→ `observation` or `principle`);
 > a rule someone must follow (→ `obligation`).
 >
 > **Doc.** "The signal assumes foot traffic converts to revenue at a stable rate
@@ -472,7 +496,7 @@ boundary is stated once rather than twice and cannot drift between two entries.
 > Marker words: *requires*, *depends on*, *needs*, *is a prerequisite for*.
 >
 > **Excludes:** something taken to be true rather than needed to run (→
-> `assumption`); a component the thing is made of (→ `structure`); a rule
+> `assumption`); a component the thing is made of (→ `architecture`); a rule
 > compelling someone to supply it (→ `obligation`).
 >
 > **Doc.** "Signal construction requires the earnings calendar in order to
@@ -500,12 +524,13 @@ rather than patched into a definition.
 | `decision` / `obligation` | Is there a modal? An obligation states a standing requirement in modal form; a decision states one was established. If both fit, the modal wins. |
 | `decision` / `recommendation` | Settled or proposed? A decision is closed; a recommendation is still advice. |
 | `obligation` / `prohibition` | Polarity of the modal. Requirement versus forbidding. |
-| `procedure` / `technique` | Are there steps? A procedure gives an order to follow; a technique names an approach. |
 | `recommendation` / `obligation` | Is anyone accountable? Advice can be ignored without violation; an obligation cannot. |
-| `driver` / `assumption` | Is it the reason it works, or a precondition for it working? A driver explains; an assumption is what must hold for the explanation to survive. |
-| `driver` / `observation` | Does it generalize? A driver claims a standing relation; an observation reports one occasion. |
-| `structure` / `formula` | Parts or arithmetic? Structure names components; a formula computes a value. |
-| `structure` / `dependency` | Inside or outside? Structure is what the thing is made of; a dependency is something separate it needs. |
+| `principle` / `architecture` | `[MEASURED]` The largest collision in the second test (20 confusions, when these were `driver`/`structure`). WHY it works versus HOW it is built. If deleting the sentence would leave you unable to explain the idea, it is a principle; if it would leave you unable to rebuild the thing, it is architecture. |
+| `principle` / `obligation` | Explanatory or normative? A principle says why something holds; an obligation says someone must do something. "Prefer small reversible steps" is normative — it is a `recommendation` or `obligation`, not a principle. |
+| `principle` / `assumption` | Is it the reason it works, or a precondition for it working? A driver explains; an assumption is what must hold for the explanation to survive. |
+| `principle` / `observation` | Does it generalize? A driver claims a standing relation; an observation reports one occasion. |
+| `architecture` / `formula` | Parts or arithmetic? Structure names components; a formula computes a value. |
+| `architecture` / `dependency` | Inside or outside? Structure is what the thing is made of; a dependency is something separate it needs. |
 | `assumption` / `dependency` | Must be TRUE, or must be PRESENT? An assumption is a belief the model rests on; a dependency is an input it consumes. |
 | `formula` / `definition` | Does it compute? A formula produces a number; a definition fixes a meaning. |
 | `definition` / `background` | Fixing a term or setting the scene? A definition pins meaning; background situates the reader. |
@@ -783,7 +808,7 @@ Everything in this spec, sorted by what backs it.
 |---|---|
 | The fourteen definitions separate | fine α 0.778, coarse α 0.866, 4 blind raters, 72 statements |
 | Coarse tier beats fine on the same annotations | +0.088, mapping fixed in advance |
-| `mechanism` is reliable despite its 0.43 anchor | α 0.933, third of eighteen |
+| `mechanism` (v1, since renamed and narrowed) was reliable despite its 0.43 anchor | α 0.933 |
 | `finding`/`conclusion` were the worst-colliding pair | 11 co-occurrences; merged |
 | `finding` absorbs | 24% of all assignments |
 | `obligation`/`procedure` leak across coarse types | 6 confusions |
