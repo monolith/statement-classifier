@@ -6,7 +6,9 @@ statements taken from conversation.
 
 **Evidence convention.** Every claim marked `[VERIFIED]` survived three-vote
 adversarial verification against a primary source; the study, the number, and
-the sample are named inline. Claims marked `[DESIGN]` are engineering decisions
+the sample are named inline. Claims marked `[MEASURED]` come from the in-house
+collision test in `research/`, which measured this codebook rather than a
+published one. Claims marked `[DESIGN]` are engineering decisions
 with no supporting measurement — they are labelled that way deliberately, and
 §9 lists every one of them in a single place. Nothing here is presented as
 evidence-backed unless a number is attached to it.
@@ -55,7 +57,7 @@ this", never "is this correct". Epistemic status lives elsewhere.
 
 ## 2. The taxonomy
 
-Seven coarse types. Eighteen fine labels, each mapping to exactly one coarse
+Seven coarse types. Fourteen fine labels, each mapping to exactly one coarse
 type. The mapping is a lookup table, not a judgment.
 
 ### 2.1 Coarse types
@@ -80,10 +82,8 @@ inter-annotator agreement figure. `κ` below is the measured agreement for the
 |---|---|---|---|
 | `observation` | case | **0.79** | CoreSC `Observation` [VERIFIED] |
 | `event` | case | — | [DESIGN] — concrete by construction (actor + time) |
-| `study` | case | **0.65** | CoreSC `Experiment` [VERIFIED] |
 | `obligation` | rule | — | [DESIGN] — deontic modal is a surface cue |
 | `prohibition` | rule | — | [DESIGN] — deontic modal is a surface cue |
-| `permission` | rule | — | [DESIGN] — deontic modal is a surface cue |
 | `decision` | rule | — | [DESIGN] — a settled choice governs what happens next; note it is the one `rule` label with NO deontic modal to key on (§3.3) |
 | `procedure` | method | **0.74** | CoreSC `Method` [VERIFIED] |
 | `technique` | method | **0.76** | AZ-II `OWNMTHD` [VERIFIED] |
@@ -92,9 +92,7 @@ inter-annotator agreement figure. `κ` below is the measured agreement for the
 | `distinction` | concept | — | [DESIGN] |
 | `background` | concept | **0.87** | CoreSC `Background` [VERIFIED] |
 | `mechanism` | model | **0.43** | CoreSC `Model` [VERIFIED] — **weakest measured category** |
-| `tradeoff` | model | — | [DESIGN] |
-| `finding` | claim | **0.78** | CoreSC `Result` [VERIFIED] |
-| `conclusion` | claim | **0.89** | CoreSC `Conclusion` [VERIFIED] — highest measured |
+| `finding` | claim | **0.78** | CoreSC `Result` [VERIFIED] — absorbed `conclusion` (§2.5) |
 | `fact` | claim | — | [DESIGN] |
 
 Source for all CoreSC figures: Liakata et al., LREC 2010, per-category
@@ -137,6 +135,39 @@ Details in `research/2026-08-10-classifier-design-research-runC.md`.
 
 `general`'s share of the corpus is a standing health metric (§7).
 
+### 2.5 What was cut, and the two gaps it leaves
+
+`[MEASURED]` Four labels were removed after the collision test
+(`research/2026-08-10-codebook-collision-test.md`):
+
+- `conclusion` merged into `finding`. They were the worst-colliding pair in the
+  set (11 co-occurrences; α 0.607 and 0.680) and the measured-versus-inferred
+  distinction between them did not survive contact with real statements.
+- `study`, `permission`, `tradeoff` dropped as not carrying their weight for this
+  corpus. Note honestly: all three also drew **zero** assignments in the test, but
+  that was an item-set coverage gap, so the test did not independently show them
+  to be weak — the decision is editorial.
+- `event` retained deliberately, for historical recording, despite also drawing
+  zero assignments for the same coverage reason.
+
+Two gaps this leaves, both routed to `general`:
+
+1. **`model` now has exactly one fine label.** For that branch the fine and
+   coarse tiers carry identical information — a degenerate tier, harmless but
+   worth knowing. If `mechanism` is ever cut, `model` goes with it.
+2. **Permission-shaped statements have no home.** "Analysts may exceed the
+   intraday limit provided the book is flat at close" carries a deontic modal but
+   is neither required nor prohibited. It will land in `general`, or be pulled
+   into `obligation` by the modal. Watch `general`'s share for permission-heavy
+   corpora such as policy documents.
+
+`[DESIGN]` Merging `conclusion` into `finding` cuts against the other change in
+this revision — `finding` already took 24% of all assignments and was behaving
+as a de-facto residual, and widening it increases that risk. The merged
+definition below therefore tightens its exclusions against `fact` and
+`observation` rather than loosening them. Whether that holds is a re-test, not a
+claim.
+
 ---
 
 ## 3. Definitions
@@ -160,7 +191,7 @@ examples still yielded only κ 0.50–0.57 (CoreSC).
 
 ### 3.1 Required shape for every definition
 
-Each of the eighteen fine labels carries:
+Each of the fourteen fine labels carries:
 
 - **Cue** — the surface pattern, stated so a reader can check it without
   inferring intent.
@@ -177,7 +208,7 @@ not as something the exemplars fix.
 Pairwise separations live in §3.3, not inside each definition, so that a
 boundary is stated once rather than twice and cannot drift between two entries.
 
-### 3.2 The eighteen definitions
+### 3.2 The fourteen definitions
 
 ---
 
@@ -207,18 +238,6 @@ boundary is stated once rather than twice and cannot drift between two entries.
 > on 14 March 2026."
 > **Chat.** "training run 47 OOM'd overnight on node 3"
 
-#### `study` → `case` · anchor κ 0.65
-
-> **Cue.** Describes how one investigation was set up or carried out — sample,
-> period, universe, seeds, ablation arms, controls. The design, not the outcome.
->
-> **Excludes:** the result the investigation produced (→ `finding`); reusable
-> instructions meant to be followed again (→ `procedure`); a single measurement
-> (→ `observation`).
->
-> **Doc.** "The signal was backtested on US equities, 1998–2024, with 5bp of
-> one-way cost and monthly rebalancing, excluding names below $50m ADV."
-> **Chat.** "we ran it 3 seeds at 7B and 13B with the data mix held fixed"
 
 ---
 
@@ -246,17 +265,6 @@ boundary is stated once rather than twice and cannot drift between two entries.
 > **Doc.** "The desk may not carry overnight exposure in names below $50m ADV."
 > **Chat.** "never train on anything that overlaps the eval split"
 
-#### `permission` → `rule`
-
-> **Cue.** A deontic modal of allowance — *may*, *is permitted to*, *is allowed
-> to* — granting an option rather than compelling.
->
-> **Excludes:** a requirement (→ `obligation`); advice to take the option (→
-> `recommendation`).
->
-> **Doc.** "Analysts may exceed the intraday gross limit provided the book is
-> flat at close."
-> **Chat.** "you can use the shared A100s on weekends without booking"
 
 #### `decision` → `rule`
 
@@ -377,46 +385,33 @@ boundary is stated once rather than twice and cannot drift between two entries.
 > **Expected reliability:** lowest in the set. Its anchor measured κ 0.43.
 > Disagreement here is expected, not a defect.
 
-#### `tradeoff` → `model`
-
-> **Cue.** Two named quantities move in *opposite* directions. Both directions
-> are stated.
->
-> **Excludes:** only one direction given (→ `mechanism`); two terms contrasted
-> in meaning rather than in quantity (→ `distinction`); a measured comparison
-> from this work's data (→ `finding`).
->
-> **Doc.** "Increasing leverage raises expected return and raises drawdown risk
-> roughly in proportion."
-> **Chat.** "bigger batch means faster epochs but worse generalization"
 
 ---
 
 #### `finding` → `claim` · anchor κ 0.78
 
-> **Cue.** A result the present work's data supports, generalizing beyond any
-> single instance. Usually carries a number or a comparison.
+> **Cue.** What the present work's data establishes — either the measured result
+> itself or the inference drawn directly from it. Usually carries a number, a
+> comparison, or an explicit *therefore / so / this suggests*.
 >
-> **Excludes:** a single measured instance (→ `observation`); a judgment drawn
-> from results (→ `conclusion`); an externally settled proposition (→ `fact`);
-> how the investigation was set up (→ `study`).
+> **Excludes:** a single measured instance with no claim beyond it (→
+> `observation`); a proposition settled outside this work (→ `fact`); how the
+> investigation was set up (→ `study` — removed, so such statements go to
+> `general`); advice about what to do (→ `recommendation`); a causal relation
+> asserted between named things (→ `mechanism`).
 >
-> **Doc.** "The signal earned 0.82 Sharpe net of costs over the full sample, and
-> 0.61 out of sample."
-> **Chat.** "4-bit quantization cost us about 2 points on MMLU"
+> **Absorption guard.** `[MEASURED]` `finding` took 24% of all assignments in the
+> collision test, nearly double the next label, and was behaving as a de-facto
+> residual. It fires only when the statement's own data or analysis is what makes
+> it true. If the statement would remain true with this work deleted, it is
+> `fact`. If it reports one occasion rather than a result, it is `observation`.
+>
+> **Doc.** "The signal earned 0.82 Sharpe net of costs over the full sample and
+> 0.61 out of sample; the strategy is therefore not viable at institutional scale
+> given the implied capacity."
+> **Chat.** "4-bit quantization cost us about 2 points on MMLU, so the memory win
+> isn't worth it for the eval models"
 
-#### `conclusion` → `claim` · anchor κ 0.89 — highest measured
-
-> **Cue.** What is *taken from* results — an inference, judgment or implication
-> drawn rather than measured. Often signalled by *therefore*, *so*, *this
-> suggests*, *we conclude*.
->
-> **Excludes:** the measured result itself (→ `finding`); a recommendation for
-> action (→ `recommendation`); a causal explanation (→ `mechanism`).
->
-> **Doc.** "The strategy is therefore not viable at institutional scale, given
-> the capacity constraint the turnover implies."
-> **Chat.** "so the scaling law basically breaks past 70B for this data mix"
 
 #### `fact` → `claim`
 
@@ -444,23 +439,19 @@ rather than patched into a definition.
 | Pair | The test that separates them |
 |---|---|
 | `observation` / `finding` | Instance-bound or general? An observation reports one occasion; a finding claims it holds beyond that occasion. |
-| `finding` / `conclusion` | Measured or inferred? A finding is what the data shows; a conclusion is what you take from it. |
 | `finding` / `fact` | Whose data? A finding comes from the present work; a fact is settled elsewhere. |
 | `observation` / `event` | Was anything measured? An observation records a quantity or behaviour; an event records that something occurred. |
 | `event` / `decision` | Was a choice made? An event happened to you; a decision was chosen and constrains later action. |
 | `decision` / `obligation` | Is there a modal? An obligation states a standing requirement in modal form; a decision states one was established. If both fit, the modal wins. |
 | `decision` / `recommendation` | Settled or proposed? A decision is closed; a recommendation is still advice. |
 | `obligation` / `prohibition` | Polarity of the modal. Requirement versus forbidding. |
-| `obligation` / `permission` | Compelled or optional? *Must* versus *may*. |
 | `procedure` / `technique` | Are there steps? A procedure gives an order to follow; a technique names an approach. |
-| `procedure` / `study` | Repeatable or historical? A procedure is meant to be run again; a study is one investigation that was run. |
 | `recommendation` / `obligation` | Is anyone accountable? Advice can be ignored without violation; an obligation cannot. |
 | `definition` / `background` | Fixing a term or setting the scene? A definition pins meaning; background situates the reader. |
 | `definition` / `distinction` | One term or two? A definition fixes one; a distinction separates two. |
-| `mechanism` / `tradeoff` | How many directions? A tradeoff needs two quantities moving oppositely; one direction is a mechanism. |
+| `obligation` / `procedure` | `[MEASURED]` The largest cross-coarse leak in the collision test (6 confusions). A procedure tells you the steps; an obligation tells you that doing it is required. A numbered list with a *must* in it is an obligation. |
 | `mechanism` / `finding` | Relation or result? A mechanism asserts how things connect; a finding reports what was measured. |
 | `background` / `fact` | Framing or proposition? Background is accepted context; a fact is a specific checkable statement. |
-| `distinction` / `tradeoff` | Meaning or quantity? A distinction separates what terms mean; a tradeoff relates how quantities move. |
 
 ---
 
@@ -642,8 +633,12 @@ Gold set requirements:
 
 ### 7.3 The rollup question is open
 
-`[DESIGN]` This spec assumes fine labels rolling up to coarse types is worth
-doing. That assumption is **not** established. The direct experiment — one
+`[MEASURED]` The in-house collision test ran exactly this experiment on this
+codebook: same annotations, mapping fixed in advance, agreement measured at both
+tiers. Coarse scored **0.866** against fine **0.778**. That settles it for this
+taxonomy on that item set — not in general.
+
+`[DESIGN]` It remains unestablished in the literature. The direct experiment — one
 annotation set, a mapping fixed in advance, agreement measured at both tiers —
 does not exist in the reviewed literature. What exists is mixed: one scheme's
 collapse from 15 labels to 2 moved κ 0.65 → 0.65 (zero gain), another moved
@@ -722,6 +717,21 @@ Everything in this spec, sorted by what backs it.
 | Percentage agreement is biased by category count | Artstein & Poesio |
 | Typed documentation showed no task benefit | n=65, n=76, both null |
 | Temporal validity is the replicated payoff | across three memory systems |
+
+### Measured on this codebook, in-house
+
+| Claim | Number |
+|---|---|
+| The fourteen definitions separate | fine α 0.778, coarse α 0.866, 4 blind raters, 72 statements |
+| Coarse tier beats fine on the same annotations | +0.088, mapping fixed in advance |
+| `mechanism` is reliable despite its 0.43 anchor | α 0.933, third of eighteen |
+| `finding`/`conclusion` were the worst-colliding pair | 11 co-occurrences; merged |
+| `finding` absorbs | 24% of all assignments |
+| `obligation`/`procedure` leak across coarse types | 6 confusions |
+
+Caveats on all of the above: four raters from one model family, no human gold
+set, 72 items, no confidence intervals, and an item set that never exercised
+four of the labels. It measures reproducibility, not correctness.
 
 ### Design decisions with no supporting measurement
 
