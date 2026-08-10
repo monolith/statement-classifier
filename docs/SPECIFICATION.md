@@ -271,6 +271,58 @@ normatively. "Prefer small reversible steps" is a principle in ordinary English
 but is advice, not an explanation — §3.3 now carries an explicit
 `principle`/`obligation` separation for exactly that.
 
+### 2.8 What the third collision test measured
+
+`[MEASURED]` The changes in §2.7, plus the strip test and the eleven repaired
+pointers from the control, were tested on **both** earlier item sets at once —
+152 statements, four blind raters, two arms differing only in whether the strip
+test was present (`research/2026-08-10-codebook-collision-test-v3.md`).
+
+Holding the items fixed, in both directions:
+
+| | fine α | coarse α |
+|---|---|---|
+| 72 results-dense items, v2 codebook (the control) | 0.787 | 0.791 |
+| the same 72, v3 codebook | **0.883** | **0.874** |
+| 80 mixed items, v2 codebook | 0.858 | 0.927 |
+| the same 80, v3 codebook | **0.930** | 0.927 |
+
+**+0.096 and +0.072 fine α, with the item set held fixed in each pair.** This is
+what §2.7 claimed and could not show. The two renames account for most of it:
+
+| v2 | α | v3 | α |
+|---|---|---|---|
+| `driver` | 0.623 | `principle` | **0.910** |
+| `structure` | 0.727 | `architecture` | **0.851** |
+| `procedure` | 0.760 | `procedure`, absorbing `technique` | 0.834 |
+
+`[CAVEAT]` The renames are confounded with the pointer repair; both shipped in
+the same revision and this experiment cannot separate them.
+
+**The strip test does its job locally and disappears in aggregate.** On the
+`principle`/`observation` boundary it targets: 37 disagreeing rater-pairs under
+the control, 17 once the pointers and names were fixed, **11** with the strip
+test — a further 35%. On aggregate α its effect is ±0.012, which four raters
+cannot distinguish from noise. It is retained because the boundary it fixes is
+*cross-coarse*, and the coarse tier is the one consumers read.
+
+`[MEASURED]` Two collisions this test surfaced are new, both cross-coarse, and
+both are one sentence doing two jobs — the same shape the strip test addresses.
+§3.3 now carries a rule for each:
+
+- **`principle` / `recommendation`**, 12 rater-pairs. *"training/serving skew
+  here is almost always the tokenizer version, check that before you go looking
+  at the data"* — an explanation with an instruction attached.
+- **`decision` / `procedure`**, 7 rater-pairs. *"Models are versioned by the
+  SHA-256 of the serialized artifact, not by a semantic version string"* — a
+  settled choice stated as how the thing is done.
+
+`[MEASURED]` **`event` has not been exercised by three consecutive item sets**
+(2 of 608 assignments, α ≈ 0 on those two; `background` drew zero across 152
+items). `event` is retained deliberately for historical recording. It is
+untested, not disproven — but three item sets drawn from six source types
+failing to produce it is itself a statement about how often it will fire.
+
 ---
 
 ## 3. Definitions
@@ -552,7 +604,7 @@ boundary is stated once rather than twice and cannot drift between two entries.
 a garnish: the scheme that reached κ 0.71 shipped **75** of them alongside a
 decision tree, in 111 pages of guidelines.
 
-`[DESIGN]` The seventeen rules below cover the pairs judged to genuinely collide.
+`[DESIGN]` The nineteen rules below cover the pairs judged to genuinely collide.
 Pairs not listed were judged non-colliding — that judgment is mine and is worth
 challenging; a pair that turns out to collide in practice should be added here
 rather than patched into a definition.
@@ -567,6 +619,8 @@ rather than patched into a definition.
 | `recommendation` / `obligation` | Is anyone accountable? Advice can be ignored without violation; an obligation cannot. |
 | `principle` / `architecture` | `[MEASURED]` The largest collision in the second test (17 disagreeing rater-pairs, when these were `driver`/`structure`). WHY it works versus HOW it is built. If deleting the sentence would leave you unable to explain the idea, it is a principle; if it would leave you unable to rebuild the thing, it is architecture. |
 | `principle` / `obligation` | Explanatory or normative? A principle says why something holds; an obligation says someone must do something. "Prefer small reversible steps" is normative — it is a `recommendation` or `obligation`, not a principle. |
+| `principle` / `recommendation` | `[MEASURED]` 12 disagreeing rater-pairs in the third test, across two coarse types. `[DESIGN]` **If the statement contains an instruction the reader could act on, it is a `recommendation` — even when it also explains why.** The explanation is context for the advice. "Overlapping returns inflate Sharpe by autocorrelation, so use Newey-West at lag 19" is a `recommendation`; drop the second clause and it becomes a `principle`. This is the mirror of the strip test: a sentence doing two jobs gets one deterministic home. |
+| `decision` / `procedure` | `[MEASURED]` 7 disagreeing rater-pairs in the third test, across two coarse types. `[DESIGN]` **Does the sentence name what was chosen *instead of* something else?** Surface cues: *rather than*, *not X but Y*, *instead of*, *we standardised on*. Naming the rejected alternative makes it a `decision`; stating only how the thing is done makes it a `procedure`. "Models are versioned by artifact SHA-256, not by semantic version" names the alternative — `decision`. |
 | `principle` / `assumption` | Is it the reason it works, or a precondition for it working? A principle explains; an assumption is what must hold for the explanation to survive. |
 | `principle` / `observation` | `[MEASURED]` The largest collision measured in any run (37 disagreeing rater-pairs, control). Apply the **strip test** from §3.2: delete the numbers and the sample from the sentence. If nothing of substance survives, it is an `observation` — *even if the author generalizes from it*. If a causal claim stands on its own without any measurement, it is a `principle`. |
 | `architecture` / `formula` | Parts or arithmetic? Architecture names components; a formula computes a value. |
@@ -844,14 +898,23 @@ Everything in this spec, sorted by what backs it.
 
 ### Measured on this codebook, in-house
 
-Three runs, all 4 blind raters, codebook verbatim, no answer key in existence:
-**v1** (72 statements × the 18-label codebook), **v2** (80 fresh statements ×
-the 16-label codebook), **control** (v1's 72 statements × the 16-label
-codebook).
+Four runs, all 4 blind raters per arm, codebook verbatim, no answer key in
+existence: **v1** (72 statements × the 18-label codebook), **v2** (80 fresh
+statements × the 16-label codebook), **control** (v1's 72 × the 16-label
+codebook), **v3** (all 152 × the 15-label codebook, in two arms differing only
+in the strip test). 2112 assignments in total.
 
 | Claim | Number |
 |---|---|
-| The definitions separate at all | fine α 0.778–0.858, coarse α 0.791–0.927 across three runs |
+| **v3 improves on v2 with the item set held fixed, in both directions** | fine **+0.096** (72 results-dense items), **+0.072** (80 mixed items) |
+| `driver` → `principle` fixed the weakest label | α 0.623 → **0.910**, same 80 items |
+| `structure` → `architecture` fixed the second-weakest | α 0.727 → **0.851**, same 80 items |
+| Merging `technique` into `procedure` helped `procedure` | α 0.760 → 0.834, same 80 items |
+| The strip test moves its target boundary | `principle`/`observation` 37 → 17 (repair + renames) → **11** (strip test) |
+| The strip test's aggregate effect is within noise | fine −0.005, coarse +0.012, over 152 items |
+| Two new cross-coarse collisions surfaced | `principle`/`recommendation` 12, `decision`/`procedure` 7; both now in §3.3 |
+| `event` is unexercised, not disproven | 2 of 608 assignments across three item sets, α ≈ 0 |
+| The definitions separate at all | fine α 0.778 → **0.910**, coarse α 0.791 → **0.915**, across four runs |
 | Coarse tier beats fine on the same annotations | +0.088 (v1), +0.069 (v2); mapping fixed in advance |
 | **The v2 restructure did NOT improve reliability** | taxonomy alone: fine **+0.009**, coarse **−0.075** |
 | **The +0.080 v1→v2 headline was the item set, not the taxonomy** | 89% of the fine-tier gain |
@@ -868,13 +931,15 @@ A zero escape-hatch rate was first read as evidence that no label was missing.
 It is not: a missing label surfaces as a **collision**, not an escape. The
 control found the collision the escape rate could not.
 
-Caveats on all of the above: four raters from one model family, no human gold
-set, 72–80 items per run, no confidence intervals, and item sets that never
-exercised every label. It measures reproducibility, not correctness. One further
-confound is unresolved — through v2 the codebook still pointed raters at three
-removed labels from inside the `observation` definition (eleven such dangling
-pointers, since repaired), so the 37-pair collision has two candidate causes and
-this experiment separates neither.
+Caveats on all of the above: four raters per arm from one model family, no human
+gold set, 72–152 items per run, no confidence intervals, and item sets that
+never exercised every label. It measures reproducibility, not correctness.
+
+Two confounds remain unresolved. The renames shipped in the same revision as the
+eleven repaired pointers, so v3's +0.096/+0.072 cannot be attributed between
+them. And every effect at the ±0.01 scale — the strip test's aggregate figure
+in particular — is below what four raters can distinguish from noise; only the
+per-boundary collision counts move far enough to read.
 
 ### Design decisions with no supporting measurement
 
@@ -882,8 +947,13 @@ this experiment separates neither.
 - The fifteen fine labels, their names, and which coarse type each maps to. The
   `driver` → `principle` and `structure` → `architecture` renames are motivated
   by a measured collision but are not themselves measured.
-- The strip test separating `observation` from `principle`. It is a response to
-  a measured failure, not a measured fix.
+- The strip test separating `observation` from `principle`. Its effect on the
+  target boundary is measured (37 → 11); its effect on aggregate α is not
+  distinguishable from noise. The decision to keep it rests on the boundary
+  being cross-coarse, which is a judgment.
+- The `principle`/`recommendation` and `decision`/`procedure` rules in §3.3. The
+  collisions are measured; the separators are not.
+- Retaining `event` after three item sets failed to exercise it.
 - The priority order used to resolve multiple firing tests.
 - Decomposing this label set into fifteen binary probes specifically.
 - `modality`, `negative_result`, `caveat`.
@@ -914,7 +984,7 @@ this experiment separates neither.
   every anchor category in §2.2 was measured on chemistry and computational-
   linguistics papers. The κ figures transfer only as far as the category
   shapes do; they were not measured on these exemplars or these domains.
-- The seventeen pairwise separations in §3.3 cover the pairs judged to collide.
+- The nineteen pairwise separations in §3.3 cover the pairs judged to collide.
   That judgment is unmeasured. The scheme that reached κ 0.71 shipped 75 rules.
 - The reliability numbers in §2.2 are one-vs-rest binary collapses, mechanically
   higher than the full multi-way agreement of the same scheme (κ 0.50–0.57).
