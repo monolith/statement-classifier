@@ -186,11 +186,11 @@ status: proposition | finding | fact
 - `finding` — established by the work at hand. Carries its own evidence.
 - `fact` — settled outside this work.
 
-The gain is that a driver's lifecycle stops being a retyping. "More cars in the
+The gain is that a principle's lifecycle stops being a retyping. "More cars in the
 lot predicts stronger same-store sales" begins as `proposition`, becomes
 `finding` when the backtest holds, and may harden to `fact`. As three separate
 types that path required changing what the statement *is*; as a status it is an
-update, which is what actually happened — and it makes "show me every driver
+update, which is what actually happened — and it makes "show me every principle
 still at `proposition`" a query rather than an archaeology exercise.
 
 `[DESIGN]` **One field, not two.** `fact` and `finding` differ by provenance
@@ -201,11 +201,16 @@ axes were orthogonal and measured them statistically dependent (Fisher's exact,
 p<0.0001), collapsing into a few dominant cells. Start with one field; split only
 if the data demands it.
 
-**Known gap.** A measured result that drives nothing — "the signal earned 0.82
-Sharpe net of costs over the full sample" — has no obvious home now. It is not a
-single-occasion `observation`, and `claim` was where it used to go. Such
-statements will fall to `general`. `general`'s share is the metric that will
-show whether this matters (§7).
+**`[MEASURED]` Known gap, and it is worse than predicted.** A measured result
+that drives nothing — "the signal earned 0.82 Sharpe net of costs over the full
+sample" — has no obvious home now. `claim`/`finding` was where it used to go.
+This was expected to fall to `general`; the control run shows it does not.
+Raters do not reach for the escape hatch (0 of 288). They split, 37 disagreeing
+rater-pairs between `observation` and `principle`, the largest collision
+measured in any run — and on a research corpus these statements are roughly a
+quarter of the text. So `general`'s share is **not** the metric that surfaces
+this. Fine-tier α on a results-dense corpus is. See §2.7 and
+`research/2026-08-10-codebook-collision-control.md`.
 
 ### 2.7 What the second collision test changed
 
@@ -213,10 +218,38 @@ show whether this matters (§7).
 with four blind raters
 (`research/2026-08-10-codebook-collision-test-v2.md`). Agreement rose on both
 tiers: fine α 0.778 → **0.858**, coarse α 0.866 → **0.927**, unanimity 0.67 →
-0.78. No statement fell outside the taxonomy (0 of 320), so dissolving the
-`claim` coarse type cost nothing measurable — `observation` absorbed the
-results-shaped statements at 23% of assignments but with α 0.983, i.e.
-consistently rather than sloppily.
+0.78. No statement fell outside the taxonomy (0 of 320).
+
+**`[MEASURED]` That comparison was confounded, and a control says the gain was
+not the taxonomy.** The first test and the second used *different item sets*, so
+the headline moved for two reasons at once. Re-running the first test's 72 items
+through the second codebook holds the items fixed and isolates the taxonomy
+(`research/2026-08-10-codebook-collision-control.md`):
+
+| | fine α | coarse α |
+|---|---|---|
+| headline, v1 → v2 (taxonomy **and** items changed) | +0.080 | +0.061 |
+| **taxonomy alone** (v1 items, both codebooks) | **+0.009** | **−0.075** |
+| item set alone (v2 codebook, both item sets) | +0.071 | +0.136 |
+
+The restructure bought approximately nothing on a fixed item set, and *lost*
+ground at the coarse tier. The claim that dissolving `claim` "cost nothing" was
+read off the second item set, which happens to contain few of the statements
+that make it costly. On the first item set the cost is plain: `principle` and
+`observation` disagreed on **37** rater pairs, the largest collision in any test
+so far, concentrated entirely on empirical research results — sentences that
+report a measurement *in order to* assert a generalization. `claim`/`finding`
+had absorbed those. With it gone they scatter across two coarse types.
+
+`[DESIGN]` The response is a mechanical tie-break rather than a restored label:
+the **strip test** in §3.2 assigns a measured result to `observation` even when
+the author generalizes from it, and reserves `principle` for the explanation
+stated without its measurement. `[DESIGN]` A second contributing cause is
+established: through v2 the codebook's `observation` definition still pointed
+raters at `finding`, `study`, and `conclusion` — labels the restructure had
+removed. Eleven such dangling pointers were found and repaired. How much of the
+37 was the missing label and how much was the broken codebook is not yet
+separated.
 
 Three changes follow from that test:
 
@@ -224,7 +257,7 @@ Three changes follow from that test:
   weakest label, with six confusions against `procedure`. This is the one change
   the data made on its own.
 - **`driver` → `principle`.** `driver` measured α 0.623 and collided with
-  `structure` twenty times — the largest collision in the test. `[DESIGN]` The
+  `structure` seventeen times — the largest collision in that test. `[DESIGN]` The
   likely cause is the same ambiguity that sank `mechanism`: in engineering, a
   *driver* is a component, so the label read as machinery rather than as the
   causal idea. `principle` has no such reading. Whether the rename fixes the
@@ -288,9 +321,14 @@ boundary is stated once rather than twice and cannot drift between two entries.
 > claiming it holds in general. Usually carries a time, a run, a period, or a
 > named instance.
 >
-> **Excludes:** a statement that generalizes past the instance (→ `finding`);
-> the description of how an investigation was set up (→ `study`); a judgment
-> drawn from what was seen (→ `conclusion`).
+> **Excludes:** an explanation of why an effect exists, stated without the
+> measurement behind it (→ `principle`); the description of how a measurement
+> was set up (→ `procedure`).
+>
+> **Strip test.** An empirical result is an `observation` *even when the author
+> generalizes from it*. Delete the numbers and the sample from the sentence: if
+> nothing of substance survives, it was an `observation`; if a causal claim
+> survives on its own, it is a `principle`.
 >
 > **Doc.** "Realized volatility on the book exceeded the model's 99th-percentile
 > band on three consecutive sessions in March 2026."
@@ -302,7 +340,8 @@ boundary is stated once rather than twice and cannot drift between two entries.
 > being reported and nothing is being measured.
 >
 > **Excludes:** a settled choice (→ `decision`); a measurement taken (→
-> `observation`); a recurring or general state of affairs (→ `fact`).
+> `observation`); a recurring or generally accepted state of affairs (→
+> `background`).
 >
 > **Doc.** "The prime broker raised margin requirements on the fund's short book
 > on 14 March 2026."
@@ -316,9 +355,9 @@ boundary is stated once rather than twice and cannot drift between two entries.
 > **Cue.** A deontic modal of requirement — *must*, *shall*, *is required to* —
 > with someone accountable to it.
 >
-> **Excludes:** a requirement stated in the negative (→ `prohibition`); an
-> option rather than a requirement (→ `permission`); advice with no
-> accountability (→ `recommendation`).
+> **Excludes:** a requirement stated in the negative (→ `prohibition`); advice
+> with no accountability (→ `recommendation`). A statement that merely *permits*
+> rather than requires has no label of its own and falls to `general`.
 >
 > **Doc.** "Positions must be marked to market daily before 17:00 ET."
 > **Chat.** "every eval run has to log its seed and commit hash"
@@ -393,9 +432,9 @@ boundary is stated once rather than twice and cannot drift between two entries.
 > **Cue.** Fixes what a term means. The grammatical centre is *X is / means /
 > refers to / is defined as Y*.
 >
-> **Excludes:** a contingent statement that could turn out false (→ `fact`); an
-> explanation of why something works (→ `principle`); a contrast drawn between
-> two terms (→ `distinction`).
+> **Excludes:** a contingent statement that could turn out false, which fixes no
+> terminology (→ `principle`); a contrast drawn between two terms (→
+> `distinction`).
 >
 > **Doc.** "The Sharpe ratio is excess return divided by the standard deviation
 > of excess return."
@@ -407,8 +446,8 @@ boundary is stated once rather than twice and cannot drift between two entries.
 > them. Both sides are named and the difference is the payload.
 >
 > **Excludes:** a single term being defined (→ `definition`); two quantities
-> moving against each other (→ `tradeoff`); a claim that one is better (→
-> `finding` or `conclusion`).
+> moving against each other, or a claim that one option is better (→
+> `principle`).
 >
 > **Doc.** "Realized volatility is measured from past returns; implied
 > volatility is backed out of option prices."
@@ -419,8 +458,9 @@ boundary is stated once rather than twice and cannot drift between two entries.
 > **Cue.** Context a reader needs, presented as generally accepted and not as
 > the author's own contribution or measurement.
 >
-> **Excludes:** a term being defined (→ `definition`); a specific checkable
-> proposition (→ `fact`); a result from the present work (→ `finding`).
+> **Excludes:** a term being defined (→ `definition`); a checkable claim
+> advanced as the author's own (→ `principle`); a measured result from the
+> present work (→ `observation`).
 >
 > **Doc.** "Cross-sectional momentum has been documented in equity markets since
 > Jegadeesh and Titman."
@@ -440,7 +480,7 @@ boundary is stated once rather than twice and cannot drift between two entries.
 >
 > **Carries `status`** (§2.6): `proposition` when hedged or untested, `finding`
 > when this work established it, `fact` when settled elsewhere. The status is not
-> part of choosing this label — a driver is a driver whether or not it is proven.
+> part of choosing this label — a principle is a principle whether or not it is proven.
 >
 > **Doc.** "Parking-lot vehicle counts predict same-store sales, so changes in
 > counts lead reported revenue by roughly one quarter."
@@ -512,7 +552,7 @@ boundary is stated once rather than twice and cannot drift between two entries.
 a garnish: the scheme that reached κ 0.71 shipped **75** of them alongside a
 decision tree, in 111 pages of guidelines.
 
-`[DESIGN]` The eighteen rules below cover the pairs judged to genuinely collide.
+`[DESIGN]` The seventeen rules below cover the pairs judged to genuinely collide.
 Pairs not listed were judged non-colliding — that judgment is mine and is worth
 challenging; a pair that turns out to collide in practice should be added here
 rather than patched into a definition.
@@ -525,17 +565,17 @@ rather than patched into a definition.
 | `decision` / `recommendation` | Settled or proposed? A decision is closed; a recommendation is still advice. |
 | `obligation` / `prohibition` | Polarity of the modal. Requirement versus forbidding. |
 | `recommendation` / `obligation` | Is anyone accountable? Advice can be ignored without violation; an obligation cannot. |
-| `principle` / `architecture` | `[MEASURED]` The largest collision in the second test (20 confusions, when these were `driver`/`structure`). WHY it works versus HOW it is built. If deleting the sentence would leave you unable to explain the idea, it is a principle; if it would leave you unable to rebuild the thing, it is architecture. |
+| `principle` / `architecture` | `[MEASURED]` The largest collision in the second test (17 disagreeing rater-pairs, when these were `driver`/`structure`). WHY it works versus HOW it is built. If deleting the sentence would leave you unable to explain the idea, it is a principle; if it would leave you unable to rebuild the thing, it is architecture. |
 | `principle` / `obligation` | Explanatory or normative? A principle says why something holds; an obligation says someone must do something. "Prefer small reversible steps" is normative — it is a `recommendation` or `obligation`, not a principle. |
-| `principle` / `assumption` | Is it the reason it works, or a precondition for it working? A driver explains; an assumption is what must hold for the explanation to survive. |
-| `principle` / `observation` | Does it generalize? A driver claims a standing relation; an observation reports one occasion. |
-| `architecture` / `formula` | Parts or arithmetic? Structure names components; a formula computes a value. |
-| `architecture` / `dependency` | Inside or outside? Structure is what the thing is made of; a dependency is something separate it needs. |
+| `principle` / `assumption` | Is it the reason it works, or a precondition for it working? A principle explains; an assumption is what must hold for the explanation to survive. |
+| `principle` / `observation` | `[MEASURED]` The largest collision measured in any run (37 disagreeing rater-pairs, control). Apply the **strip test** from §3.2: delete the numbers and the sample from the sentence. If nothing of substance survives, it is an `observation` — *even if the author generalizes from it*. If a causal claim stands on its own without any measurement, it is a `principle`. |
+| `architecture` / `formula` | Parts or arithmetic? Architecture names components; a formula computes a value. |
+| `architecture` / `dependency` | Inside or outside? Architecture is what the thing is made of; a dependency is something separate it needs. |
 | `assumption` / `dependency` | Must be TRUE, or must be PRESENT? An assumption is a belief the model rests on; a dependency is an input it consumes. |
 | `formula` / `definition` | Does it compute? A formula produces a number; a definition fixes a meaning. |
 | `definition` / `background` | Fixing a term or setting the scene? A definition pins meaning; background situates the reader. |
 | `definition` / `distinction` | One term or two? A definition fixes one; a distinction separates two. |
-| `obligation` / `procedure` | `[MEASURED]` The largest cross-coarse leak in the collision test (6 confusions). A procedure tells you the steps; an obligation tells you that doing it is required. A numbered list with a *must* in it is an obligation. |
+| `obligation` / `procedure` | `[MEASURED]` A cross-coarse leak in the first test (6 disagreeing rater-pairs). A procedure tells you the steps; an obligation tells you that doing it is required. A numbered list with a *must* in it is an obligation. |
 
 ---
 
@@ -544,13 +584,13 @@ rather than patched into a definition.
 ### 4.1 Independent boolean tests, resolved in code
 
 The model answers **one independent yes/no question per fine label**, in a
-single call. It is never asked to pick one of eighteen.
+single call. It is never asked to pick one of fifteen.
 
 `[VERIFIED]` Multiclass framing measured **90% lower odds** of correct
 detection than binary presence/absence framing (OR 0.10, 95% CI 0.03–0.35,
 p<.001, mixed-effects model over 1.1M+ annotations, arXiv 2601.12099).
 
-`[DESIGN]` The specific tactic of decomposing *this* label set into eighteen
+`[DESIGN]` The specific tactic of decomposing *this* label set into fifteen
 binary probes is an inference from that finding, not a tested design. The cited
 study compared natively-binary features against natively-multiclass ones; it did
 not decompose one set into the other. A claim asserting a tested decomposition
@@ -804,25 +844,48 @@ Everything in this spec, sorted by what backs it.
 
 ### Measured on this codebook, in-house
 
+Three runs, all 4 blind raters, codebook verbatim, no answer key in existence:
+**v1** (72 statements × the 18-label codebook), **v2** (80 fresh statements ×
+the 16-label codebook), **control** (v1's 72 statements × the 16-label
+codebook).
+
 | Claim | Number |
 |---|---|
-| The fourteen definitions separate | fine α 0.778, coarse α 0.866, 4 blind raters, 72 statements |
-| Coarse tier beats fine on the same annotations | +0.088, mapping fixed in advance |
-| `mechanism` (v1, since renamed and narrowed) was reliable despite its 0.43 anchor | α 0.933 |
-| `finding`/`conclusion` were the worst-colliding pair | 11 co-occurrences; merged |
-| `finding` absorbs | 24% of all assignments |
-| `obligation`/`procedure` leak across coarse types | 6 confusions |
+| The definitions separate at all | fine α 0.778–0.858, coarse α 0.791–0.927 across three runs |
+| Coarse tier beats fine on the same annotations | +0.088 (v1), +0.069 (v2); mapping fixed in advance |
+| **The v2 restructure did NOT improve reliability** | taxonomy alone: fine **+0.009**, coarse **−0.075** |
+| **The +0.080 v1→v2 headline was the item set, not the taxonomy** | 89% of the fine-tier gain |
+| Dissolving `claim` has a cost, concealed by the v2 item set | `principle`/`observation` 37 rater-pairs on v1 items, 0 on v2 items |
+| `technique` was the weakest label and collided with `procedure` | α 0.588, 6 confusions; merged |
+| `driver`/`structure` was v2's largest collision | 17 confusions; both since renamed |
+| `mechanism` (v1, since removed) was reliable despite its 0.43 anchor | α 0.933 |
+| `finding`/`conclusion` were v1's worst pair | 17 confusions; merged, then removed |
+| A results-shaped label absorbs a quarter of a research corpus | `finding` 24% (v1), `observation` 23% (v2) |
+| Raters do not reach for the escape hatch even when the right label is absent | 0 of 320 (v2), 0 of 288 (control) |
+
+That last row is the methodological correction this register exists to record.
+A zero escape-hatch rate was first read as evidence that no label was missing.
+It is not: a missing label surfaces as a **collision**, not an escape. The
+control found the collision the escape rate could not.
 
 Caveats on all of the above: four raters from one model family, no human gold
-set, 72 items, no confidence intervals, and an item set that never exercised
-four of the labels. It measures reproducibility, not correctness.
+set, 72–80 items per run, no confidence intervals, and item sets that never
+exercised every label. It measures reproducibility, not correctness. One further
+confound is unresolved — through v2 the codebook still pointed raters at three
+removed labels from inside the `observation` definition (eleven such dangling
+pointers, since repaired), so the 37-pair collision has two candidate causes and
+this experiment separates neither.
 
 ### Design decisions with no supporting measurement
 
-- The seven coarse types and their names.
-- The eighteen fine labels, their names, and which coarse type each maps to.
+- The five coarse types and their names.
+- The fifteen fine labels, their names, and which coarse type each maps to. The
+  `driver` → `principle` and `structure` → `architecture` renames are motivated
+  by a measured collision but are not themselves measured.
+- The strip test separating `observation` from `principle`. It is a response to
+  a measured failure, not a measured fix.
 - The priority order used to resolve multiple firing tests.
-- Decomposing this label set into eighteen binary probes specifically.
+- Decomposing this label set into fifteen binary probes specifically.
 - `modality`, `negative_result`, `caveat`.
 - Treating `general` as a code-assigned residual rather than a model-visible label
   (the *hazard* is measured; this *mitigation* is not).
@@ -851,7 +914,7 @@ four of the labels. It measures reproducibility, not correctness.
   every anchor category in §2.2 was measured on chemistry and computational-
   linguistics papers. The κ figures transfer only as far as the category
   shapes do; they were not measured on these exemplars or these domains.
-- The eighteen pairwise separations in §3.3 cover the pairs judged to collide.
+- The seventeen pairwise separations in §3.3 cover the pairs judged to collide.
   That judgment is unmeasured. The scheme that reached κ 0.71 shipped 75 rules.
 - The reliability numbers in §2.2 are one-vs-rest binary collapses, mechanically
   higher than the full multi-way agreement of the same scheme (κ 0.50–0.57).

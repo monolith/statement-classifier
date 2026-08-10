@@ -1,0 +1,1626 @@
+{
+  "items": [
+    {
+      "id": "T000",
+      "text": "The strategy harvests the premium that commercial hedgers pay to shed price risk: when inventories are scarce the futures curve slopes downward, and a long position in the front contract earns that premium as the contract rolls toward spot."
+    },
+    {
+      "id": "T001",
+      "text": "Carry for each instrument is computed as the log of the front settlement price divided by the second settlement price, annualized by the number of calendar days between the two expiries."
+    },
+    {
+      "id": "T002",
+      "text": "Raw carry scores are winsorized at the 5th and 95th percentiles and z-scored within sector before being pooled into a single ranking, because the premium is understood to arise from inventory pressure inside a sector rather than across sectors; ranking crude carry directly against ten-year note carry mostly measures the distance between two unrelated markets."
+    },
+    {
+      "id": "T003",
+      "text": "Each rebalance holds the top tercile long and the bottom tercile short, with positions inside each leg scaled inversely to trailing volatility so that every instrument contributes approximately equal risk."
+    },
+    {
+      "id": "T004",
+      "text": "Ex-ante volatility means the annualized standard deviation of daily log returns over a 60-day window, exponentially weighted with a 20-day half-life and floored at the instrument's five-year 10th percentile."
+    },
+    {
+      "id": "T005",
+      "text": "The signal requires daily settlement prices for at least the first three contracts on every curve together with open interest by contract, since the roll is triggered by the open-interest crossover rather than by a fixed day of the month."
+    },
+    {
+      "id": "T006",
+      "text": "Position sizing depends on a covariance matrix estimated from 260 daily returns and shrunk toward a constant-correlation target; without the shrinkage the optimizer hands almost the entire risk budget to the two most collinear rate contracts."
+    },
+    {
+      "id": "T007",
+      "text": "The construction assumes that a trailing 60-day volatility estimate remains a valid forecast across the one-month holding period, and that assumption fails exactly in regime shifts, when the estimate is stalest and gross leverage is at its highest."
+    },
+    {
+      "id": "T008",
+      "text": "Reported backtest returns assume execution at the rebalance day's volume-weighted average price with 1.5 basis points of slippage on developed-market futures and 4 basis points elsewhere, and carry no market-impact term that scales with position size."
+    },
+    {
+      "id": "T009",
+      "text": "No single instrument may carry more than 15% of portfolio risk and no sector more than 40%, and any instrument whose 20-day average dollar volume falls below $50 million is dropped at the next rebalance."
+    },
+    {
+      "id": "T100",
+      "text": "The ranker is a two-stage architecture: a bi-encoder retrieves the top 200 candidates for a query, and a cross-encoder reranks those to the 20 results returned to the caller."
+    },
+    {
+      "id": "T101",
+      "text": "Inputs are the raw query string, the request locale, and a 30-day interaction history truncated to the 50 most recent events; no demographic attributes are used as features."
+    },
+    {
+      "id": "T102",
+      "text": "Relevance is scored as normalized discounted cumulative gain at rank 10, computed against graded labels collected from a trained annotator pool rather than from click logs."
+    },
+    {
+      "id": "T103",
+      "text": "Document embeddings are refreshed on a nightly full rebuild of the serving index; an item ingested at 09:00 is therefore not retrievable until the next build completes."
+    },
+    {
+      "id": "T104",
+      "text": "The model has not been evaluated on queries shorter than three characters, which are roughly 4% of production traffic and are routed to a lexical fallback path."
+    },
+    {
+      "id": "T105",
+      "text": "Calibration is reported as expected calibration error over 15 equal-mass bins, and the current production checkpoint measures 0.031 on the held-out slice."
+    },
+    {
+      "id": "T106",
+      "text": "Training data comes from logged impressions and so inherits the exposure bias of the previous ranker; propensity weighting corrects for position effects but not for items that were never shown."
+    },
+    {
+      "id": "T107",
+      "text": "End-to-end latency is 42 ms at p50 and 180 ms at p99 at 1,200 queries per second per replica; sustained p99 above budget sheds traffic to the retrieval-only path."
+    },
+    {
+      "id": "T108",
+      "text": "The label taxonomy is frozen at v3 because any revision requires re-annotating the full 12,000-item evaluation set, so taxonomy changes are batched and released quarterly."
+    },
+    {
+      "id": "T109",
+      "text": "Accuracy on code-mixed text is unmeasured: the multilingual encoder was fine-tuned on monolingual segments only, and inputs that switch script within a sentence fall outside the evaluated distribution."
+    },
+    {
+      "id": "T200",
+      "text": "The signal is constructed as the residual of five-day realized dispersion regressed on trailing thirty-day dispersion within each GICS sub-industry, standardized cross-sectionally and winsorized at the 1st and 99th percentiles."
+    },
+    {
+      "id": "T201",
+      "text": "In the 2014-2024 backtest on the Russell 1000, the top-minus-bottom decile spread earns 4.1% annualized before costs with a t-statistic of 2.3, which does not clear our 3.0 threshold for allocation."
+    },
+    {
+      "id": "T202",
+      "text": "Rank information coefficient averages 0.021 at a five-day horizon and decays to approximately zero by day eleven, implying the alpha is short-horizon and will not survive weekly rebalancing."
+    },
+    {
+      "id": "T203",
+      "text": "Monthly IC is positive in 71 of 132 months, but the bulk of the cumulative return accrues in 2018 and 2020, so the unconditional Sharpe is not representative of a typical year."
+    },
+    {
+      "id": "T204",
+      "text": "Annualized two-way turnover is roughly 890%, and at 8bps round-trip on the liquid book the net spread falls to approximately 1.2%, leaving little margin for slippage."
+    },
+    {
+      "id": "T205",
+      "text": "Correlation to our existing short-term reversal factor is 0.44 and to residual momentum is -0.19; the incremental contribution after orthogonalization has not yet been measured."
+    },
+    {
+      "id": "T206",
+      "text": "The effect is concentrated in the smallest two size quintiles, where median ADV is under $12M, which raises the possibility that the return is compensation for liquidity provision rather than mispricing."
+    },
+    {
+      "id": "T207",
+      "text": "No out-of-sample or holdout period has been reserved to date; the specification was chosen after examining performance across the full sample and should be treated as in-sample until a 2025-forward test is run."
+    },
+    {
+      "id": "T208",
+      "text": "The economic hypothesis is that dealers widen quotes ahead of idiosyncratic dispersion shocks and the resulting order-flow imbalance mean-reverts over three to five sessions, but we have no direct order-flow data to confirm this channel."
+    },
+    {
+      "id": "T209",
+      "text": "Estimated capacity before market impact halves the net spread is on the order of $60-90M under a square-root impact model with our current participation assumptions, which would make this a satellite sleeve at best."
+    },
+    {
+      "id": "T300",
+      "text": "Gross exposure is capped at 300% of net asset value and net exposure at 120%, measured at the close of each business day; any breach must be reported to the Chief Risk Officer before the next open."
+    },
+    {
+      "id": "T301",
+      "text": "No single issuer may exceed 5% of NAV at cost, and no single position may exceed 20% of the security's twenty-day average daily trading volume."
+    },
+    {
+      "id": "T302",
+      "text": "Position limits are enforced pre-trade in the order management system; overrides require dual authorization from the portfolio manager and a member of the Risk Committee, and every override is logged with its stated rationale."
+    },
+    {
+      "id": "T303",
+      "text": "The firm calculates one-day 99% Value at Risk daily using a two-year historical simulation window, and supplements it with expected shortfall at the same confidence level because VaR alone does not characterize losses in the tail."
+    },
+    {
+      "id": "T304",
+      "text": "Stress testing is conducted weekly against a standing suite of scenarios that includes the 2008 credit crisis, the 2020 liquidity shock, and a parallel 200 basis point rate move, with results circulated to the Investment Committee each Monday."
+    },
+    {
+      "id": "T305",
+      "text": "Portfolio liquidity is assessed monthly under the assumption that the firm may participate in no more than 20% of average daily volume; any strategy in which more than 15% of the portfolio would require over ten days to liquidate is escalated for review."
+    },
+    {
+      "id": "T306",
+      "text": "A drawdown of 5% from a strategy's high-water mark triggers a mandatory review with the Chief Risk Officer, and a 10% drawdown triggers an automatic 50% reduction in risk capital pending Investment Committee approval to restore it."
+    },
+    {
+      "id": "T307",
+      "text": "Counterparty exposure to any single prime broker or derivatives counterparty is limited to 25% of NAV, and all uncleared derivative relationships must operate under an executed ISDA with a two-way credit support annex."
+    },
+    {
+      "id": "T308",
+      "text": "Independent price verification is performed monthly by the valuation team using sources unaffiliated with the trading desk; any position marked more than 3% away from the independent price is escalated to the Valuation Committee for adjudication."
+    },
+    {
+      "id": "T309",
+      "text": "Model risk is managed through independent validation prior to production use and annual revalidation thereafter, and no model may be relied upon for position sizing or hedging until validation is documented and signed off."
+    },
+    {
+      "id": "T400",
+      "text": "the universe file only carries current constituents, so anything that delisted before today is silently missing and the pre-2015 sharpe is mostly survivorship"
+    },
+    {
+      "id": "T401",
+      "text": "vendor restates fundamentals in place with no asof column, so joining on report date gives you the corrected numbers rather than what was visible at the time"
+    },
+    {
+      "id": "T402",
+      "text": "signal timestamps are exchange-local but the price panel is utc, which buys us a full day of lookahead on the asia names"
+    },
+    {
+      "id": "T403",
+      "text": "shift the signal one bar later and sharpe drops 2.1 -> 0.4, so the result is fill timing not alpha"
+    },
+    {
+      "id": "T404",
+      "text": "hardcoded 40bps borrow is nowhere near right for the 2008 smallcap shorts, a bunch of those were specials north of 20 pct"
+    },
+    {
+      "id": "T405",
+      "text": "the 5 pct adv cap is only applied at sizing, the fill engine still crosses the whole order at vwap"
+    },
+    {
+      "id": "T406",
+      "text": "adjusted close is back-adjusted for splits and dividends both, so any level-based or threshold signal built on it is contaminated"
+    },
+    {
+      "id": "T407",
+      "text": "halted names still emit a price row via last-trade carryforward and the model will happily trade them"
+    },
+    {
+      "id": "T408",
+      "text": "no seed in the config means the walk-forward split reshuffles, so every rerun produces a different oos number"
+    },
+    {
+      "id": "T409",
+      "text": "earnings dates in that file are announcement dates not effective dates, so the pre/post split is off by one session for anything reported before the open"
+    },
+    {
+      "id": "T500",
+      "text": "loss spike at step ~41k traced back to a shard of near-dupe forum scrape; skipping that shard and rewinding 500 steps cleared it, no arch change needed"
+    },
+    {
+      "id": "T501",
+      "text": "z-loss stays at 1e-4. we dropped it to zero on run 6 and the logits drifted big within 10k steps"
+    },
+    {
+      "id": "T502",
+      "text": "grad clip at 1.0 is load-bearing on this config, not decorative \u2014 at 2.0 we get a spike roughly every 15k steps"
+    },
+    {
+      "id": "T503",
+      "text": "we OOM at the optimizer step, not the forward. bf16 compute + fp32 master weights is what eats the pod above ~30b, so shard optimizer state before you touch batch size"
+    },
+    {
+      "id": "T504",
+      "text": "idea floated today: swap the mixture toward long-context + code at 80% of the run and hold lr flat instead of decaying to zero. zero ablations behind it so far"
+    },
+    {
+      "id": "T505",
+      "text": "swapping mixture without bumping lr gives you a pretty cliff-drop in train loss that never shows up downstream. seen it three times now, don't get excited by the curve"
+    },
+    {
+      "id": "T506",
+      "text": "mmlu is flat noise until roughly 1e21 flops then steps up. anything you read off it in the first 20k steps is vibes"
+    },
+    {
+      "id": "T507",
+      "text": "checkpoints every 2k steps, keep every 10th. full state is 1.4tb a pop so we physically cannot keep them all"
+    },
+    {
+      "id": "T508",
+      "text": "dataloader seed is part of the checkpoint now. resuming without it silently replays the same batches, which is exactly why run 7 looked better than it was"
+    },
+    {
+      "id": "T509",
+      "text": "if a wandb run name doesn't match <date>-<confighash>-<seed> it was launched by hand and is not reproducible. treat those as anecdotes"
+    },
+    {
+      "id": "T600",
+      "text": "The volatility-scaled version of the carry portfolio earned a net Sharpe ratio of 0.82 over 1998-2025, against 0.61 for the unscaled book, and essentially all of the improvement is attributable to the 2008 and 2020 drawdown quarters."
+    },
+    {
+      "id": "T601",
+      "text": "That the spread has survived more than a decade of publication argues for a funding-constraint interpretation rather than a mispricing one: it widens precisely in the quarters when dealer balance-sheet capacity is scarcest, and it shows no post-publication decay."
+    },
+    {
+      "id": "T602",
+      "text": "The variance decomposition assumes the covariance matrix is stationary within each 60-day estimation window; when a window straddles a regime break, as in March 2020, the estimated factor loadings are not usable."
+    },
+    {
+      "id": "T603",
+      "text": "Adding the news-sentiment factor moved monthly alpha from 42 bps to 38 bps with a Newey-West t-statistic of 0.9, leaving it statistically indistinguishable from zero once momentum and short interest are controlled for."
+    },
+    {
+      "id": "T604",
+      "text": "Results depend on point-in-time fundamentals. Rerunning the identical backtest on the as-reported data inflates the annualized return by roughly 180 bps, entirely through look-ahead in restatement dates."
+    },
+    {
+      "id": "T605",
+      "text": "Capacity is the binding constraint on this strategy: at $2bn of notional the estimated price impact consumes the whole gross spread, so the findings should be read as a small-book result rather than an institutional one."
+    },
+    {
+      "id": "T606",
+      "text": "Practitioners replicating this design should shrink the sample covariance toward a single-factor target before inversion; without shrinkage the minimum-variance weights load on the smallest eigenvalues and turn over roughly three times as fast."
+    },
+    {
+      "id": "T607",
+      "text": "The signal decays with a half-life of about eleven trading days, so a weekly rebalance captures approximately 70% of the theoretically available spread at one-fifth of the turnover of the daily schedule."
+    },
+    {
+      "id": "T608",
+      "text": "The portfolio lost 6.1% on 5 August 2024, its worst single session in the sample, when the carry unwind hit the momentum and low-volatility sleeves simultaneously."
+    },
+    {
+      "id": "T609",
+      "text": "Implementation shortfall is measured here against the decision price rather than the arrival price, which assigns delay cost to the strategy instead of to the execution desk and widens reported costs by 7-9 bps per round trip."
+    },
+    {
+      "id": "T700",
+      "text": "We adopted the model registry as the sole promotion path to production serving; artifacts built outside it are not deployable, regardless of how they were validated."
+    },
+    {
+      "id": "T701",
+      "text": "To roll back a serving deployment, repoint the production alias at the previous model version, drain the canary pool, then restart inference replicas one availability zone at a time."
+    },
+    {
+      "id": "T702",
+      "text": "Every training run must record its dataset snapshot ID, git commit SHA, and random seed in the run manifest before the first checkpoint is written."
+    },
+    {
+      "id": "T703",
+      "text": "Features may not be backfilled from the offline warehouse into the online store without a replay window that excludes the evaluation period."
+    },
+    {
+      "id": "T704",
+      "text": "Feature lookup, not the model forward pass, dominates end-to-end serving latency, which is why the gateway caches the last-known-good feature vector per entity."
+    },
+    {
+      "id": "T705",
+      "text": "A stale feature is one whose materialization timestamp is older than the freshness SLA declared in its feature definition, whether or not the underlying value has changed."
+    },
+    {
+      "id": "T706",
+      "text": "Offline evaluation scores a model against a frozen snapshot; shadow evaluation scores the same model against live traffic without serving its predictions to users."
+    },
+    {
+      "id": "T707",
+      "text": "The autoscaling policy assumes request arrivals are approximately Poisson within a five-minute window, an assumption bursty batch clients violate and which routes them to the async queue instead."
+    },
+    {
+      "id": "T708",
+      "text": "During the 2026-07-02 incident, p99 inference latency held at 40 ms while the feature store's read replicas lagged by nine minutes, so the failure surfaced as silent accuracy loss rather than as timeouts."
+    },
+    {
+      "id": "T709",
+      "text": "Drift alerting depends on the daily baseline job completing by 06:00 UTC; when that job fails the monitor emits no signal at all rather than a stale one."
+    }
+  ],
+  "raters": [
+    {
+      "rater": 0,
+      "labels": [
+        {
+          "id": "T000",
+          "fine": "driver"
+        },
+        {
+          "id": "T001",
+          "fine": "formula"
+        },
+        {
+          "id": "T002",
+          "fine": "procedure"
+        },
+        {
+          "id": "T003",
+          "fine": "structure"
+        },
+        {
+          "id": "T004",
+          "fine": "definition"
+        },
+        {
+          "id": "T005",
+          "fine": "dependency"
+        },
+        {
+          "id": "T006",
+          "fine": "dependency"
+        },
+        {
+          "id": "T007",
+          "fine": "assumption"
+        },
+        {
+          "id": "T008",
+          "fine": "assumption"
+        },
+        {
+          "id": "T009",
+          "fine": "prohibition"
+        },
+        {
+          "id": "T100",
+          "fine": "structure"
+        },
+        {
+          "id": "T101",
+          "fine": "structure"
+        },
+        {
+          "id": "T102",
+          "fine": "formula"
+        },
+        {
+          "id": "T103",
+          "fine": "technique"
+        },
+        {
+          "id": "T104",
+          "fine": "observation"
+        },
+        {
+          "id": "T105",
+          "fine": "observation"
+        },
+        {
+          "id": "T106",
+          "fine": "driver"
+        },
+        {
+          "id": "T107",
+          "fine": "observation"
+        },
+        {
+          "id": "T108",
+          "fine": "decision"
+        },
+        {
+          "id": "T109",
+          "fine": "observation"
+        },
+        {
+          "id": "T200",
+          "fine": "formula"
+        },
+        {
+          "id": "T201",
+          "fine": "observation"
+        },
+        {
+          "id": "T202",
+          "fine": "observation"
+        },
+        {
+          "id": "T203",
+          "fine": "observation"
+        },
+        {
+          "id": "T204",
+          "fine": "observation"
+        },
+        {
+          "id": "T205",
+          "fine": "observation"
+        },
+        {
+          "id": "T206",
+          "fine": "observation"
+        },
+        {
+          "id": "T207",
+          "fine": "recommendation"
+        },
+        {
+          "id": "T208",
+          "fine": "driver"
+        },
+        {
+          "id": "T209",
+          "fine": "observation"
+        },
+        {
+          "id": "T300",
+          "fine": "obligation"
+        },
+        {
+          "id": "T301",
+          "fine": "prohibition"
+        },
+        {
+          "id": "T302",
+          "fine": "obligation"
+        },
+        {
+          "id": "T303",
+          "fine": "technique"
+        },
+        {
+          "id": "T304",
+          "fine": "procedure"
+        },
+        {
+          "id": "T305",
+          "fine": "assumption"
+        },
+        {
+          "id": "T306",
+          "fine": "obligation"
+        },
+        {
+          "id": "T307",
+          "fine": "obligation"
+        },
+        {
+          "id": "T308",
+          "fine": "procedure"
+        },
+        {
+          "id": "T309",
+          "fine": "prohibition"
+        },
+        {
+          "id": "T400",
+          "fine": "structure"
+        },
+        {
+          "id": "T401",
+          "fine": "structure"
+        },
+        {
+          "id": "T402",
+          "fine": "driver"
+        },
+        {
+          "id": "T403",
+          "fine": "observation"
+        },
+        {
+          "id": "T404",
+          "fine": "assumption"
+        },
+        {
+          "id": "T405",
+          "fine": "structure"
+        },
+        {
+          "id": "T406",
+          "fine": "definition"
+        },
+        {
+          "id": "T407",
+          "fine": "structure"
+        },
+        {
+          "id": "T408",
+          "fine": "dependency"
+        },
+        {
+          "id": "T409",
+          "fine": "distinction"
+        },
+        {
+          "id": "T500",
+          "fine": "observation"
+        },
+        {
+          "id": "T501",
+          "fine": "decision"
+        },
+        {
+          "id": "T502",
+          "fine": "driver"
+        },
+        {
+          "id": "T503",
+          "fine": "driver"
+        },
+        {
+          "id": "T504",
+          "fine": "recommendation"
+        },
+        {
+          "id": "T505",
+          "fine": "driver"
+        },
+        {
+          "id": "T506",
+          "fine": "background"
+        },
+        {
+          "id": "T507",
+          "fine": "decision"
+        },
+        {
+          "id": "T508",
+          "fine": "structure"
+        },
+        {
+          "id": "T509",
+          "fine": "recommendation"
+        },
+        {
+          "id": "T600",
+          "fine": "observation"
+        },
+        {
+          "id": "T601",
+          "fine": "driver"
+        },
+        {
+          "id": "T602",
+          "fine": "assumption"
+        },
+        {
+          "id": "T603",
+          "fine": "observation"
+        },
+        {
+          "id": "T604",
+          "fine": "dependency"
+        },
+        {
+          "id": "T605",
+          "fine": "driver"
+        },
+        {
+          "id": "T606",
+          "fine": "recommendation"
+        },
+        {
+          "id": "T607",
+          "fine": "observation"
+        },
+        {
+          "id": "T608",
+          "fine": "observation"
+        },
+        {
+          "id": "T609",
+          "fine": "distinction"
+        },
+        {
+          "id": "T700",
+          "fine": "decision"
+        },
+        {
+          "id": "T701",
+          "fine": "procedure"
+        },
+        {
+          "id": "T702",
+          "fine": "obligation"
+        },
+        {
+          "id": "T703",
+          "fine": "prohibition"
+        },
+        {
+          "id": "T704",
+          "fine": "driver"
+        },
+        {
+          "id": "T705",
+          "fine": "definition"
+        },
+        {
+          "id": "T706",
+          "fine": "distinction"
+        },
+        {
+          "id": "T707",
+          "fine": "assumption"
+        },
+        {
+          "id": "T708",
+          "fine": "observation"
+        },
+        {
+          "id": "T709",
+          "fine": "dependency"
+        }
+      ]
+    },
+    {
+      "rater": 1,
+      "labels": [
+        {
+          "id": "T103",
+          "fine": "driver"
+        },
+        {
+          "id": "T104",
+          "fine": "observation"
+        },
+        {
+          "id": "T105",
+          "fine": "observation"
+        },
+        {
+          "id": "T106",
+          "fine": "structure"
+        },
+        {
+          "id": "T107",
+          "fine": "observation"
+        },
+        {
+          "id": "T108",
+          "fine": "decision"
+        },
+        {
+          "id": "T109",
+          "fine": "observation"
+        },
+        {
+          "id": "T200",
+          "fine": "formula"
+        },
+        {
+          "id": "T201",
+          "fine": "observation"
+        },
+        {
+          "id": "T202",
+          "fine": "observation"
+        },
+        {
+          "id": "T203",
+          "fine": "observation"
+        },
+        {
+          "id": "T204",
+          "fine": "observation"
+        },
+        {
+          "id": "T205",
+          "fine": "observation"
+        },
+        {
+          "id": "T206",
+          "fine": "observation"
+        },
+        {
+          "id": "T207",
+          "fine": "recommendation"
+        },
+        {
+          "id": "T208",
+          "fine": "driver"
+        },
+        {
+          "id": "T209",
+          "fine": "observation"
+        },
+        {
+          "id": "T300",
+          "fine": "obligation"
+        },
+        {
+          "id": "T301",
+          "fine": "prohibition"
+        },
+        {
+          "id": "T302",
+          "fine": "obligation"
+        },
+        {
+          "id": "T303",
+          "fine": "technique"
+        },
+        {
+          "id": "T304",
+          "fine": "technique"
+        },
+        {
+          "id": "T305",
+          "fine": "assumption"
+        },
+        {
+          "id": "T306",
+          "fine": "obligation"
+        },
+        {
+          "id": "T307",
+          "fine": "obligation"
+        },
+        {
+          "id": "T308",
+          "fine": "technique"
+        },
+        {
+          "id": "T309",
+          "fine": "prohibition"
+        },
+        {
+          "id": "T400",
+          "fine": "driver"
+        },
+        {
+          "id": "T401",
+          "fine": "driver"
+        },
+        {
+          "id": "T402",
+          "fine": "driver"
+        },
+        {
+          "id": "T403",
+          "fine": "observation"
+        },
+        {
+          "id": "T404",
+          "fine": "assumption"
+        },
+        {
+          "id": "T405",
+          "fine": "structure"
+        },
+        {
+          "id": "T406",
+          "fine": "driver"
+        },
+        {
+          "id": "T407",
+          "fine": "driver"
+        },
+        {
+          "id": "T408",
+          "fine": "driver"
+        },
+        {
+          "id": "T409",
+          "fine": "driver"
+        },
+        {
+          "id": "T500",
+          "fine": "observation"
+        },
+        {
+          "id": "T501",
+          "fine": "decision"
+        },
+        {
+          "id": "T502",
+          "fine": "driver"
+        },
+        {
+          "id": "T503",
+          "fine": "recommendation"
+        },
+        {
+          "id": "T504",
+          "fine": "recommendation"
+        },
+        {
+          "id": "T505",
+          "fine": "driver"
+        },
+        {
+          "id": "T506",
+          "fine": "background"
+        },
+        {
+          "id": "T507",
+          "fine": "decision"
+        },
+        {
+          "id": "T508",
+          "fine": "structure"
+        },
+        {
+          "id": "T509",
+          "fine": "recommendation"
+        },
+        {
+          "id": "T600",
+          "fine": "observation"
+        },
+        {
+          "id": "T601",
+          "fine": "driver"
+        },
+        {
+          "id": "T602",
+          "fine": "assumption"
+        },
+        {
+          "id": "T603",
+          "fine": "observation"
+        },
+        {
+          "id": "T604",
+          "fine": "dependency"
+        },
+        {
+          "id": "T605",
+          "fine": "observation"
+        },
+        {
+          "id": "T606",
+          "fine": "recommendation"
+        },
+        {
+          "id": "T607",
+          "fine": "observation"
+        },
+        {
+          "id": "T608",
+          "fine": "observation"
+        },
+        {
+          "id": "T609",
+          "fine": "decision"
+        },
+        {
+          "id": "T700",
+          "fine": "decision"
+        },
+        {
+          "id": "T701",
+          "fine": "procedure"
+        },
+        {
+          "id": "T702",
+          "fine": "obligation"
+        },
+        {
+          "id": "T703",
+          "fine": "prohibition"
+        },
+        {
+          "id": "T704",
+          "fine": "driver"
+        },
+        {
+          "id": "T705",
+          "fine": "definition"
+        },
+        {
+          "id": "T706",
+          "fine": "distinction"
+        },
+        {
+          "id": "T707",
+          "fine": "assumption"
+        },
+        {
+          "id": "T708",
+          "fine": "observation"
+        },
+        {
+          "id": "T709",
+          "fine": "dependency"
+        },
+        {
+          "id": "T000",
+          "fine": "driver"
+        },
+        {
+          "id": "T001",
+          "fine": "formula"
+        },
+        {
+          "id": "T002",
+          "fine": "procedure"
+        },
+        {
+          "id": "T003",
+          "fine": "structure"
+        },
+        {
+          "id": "T004",
+          "fine": "definition"
+        },
+        {
+          "id": "T005",
+          "fine": "dependency"
+        },
+        {
+          "id": "T006",
+          "fine": "dependency"
+        },
+        {
+          "id": "T007",
+          "fine": "assumption"
+        },
+        {
+          "id": "T008",
+          "fine": "assumption"
+        },
+        {
+          "id": "T009",
+          "fine": "prohibition"
+        },
+        {
+          "id": "T100",
+          "fine": "structure"
+        },
+        {
+          "id": "T101",
+          "fine": "structure"
+        },
+        {
+          "id": "T102",
+          "fine": "formula"
+        }
+      ]
+    },
+    {
+      "rater": 2,
+      "labels": [
+        {
+          "id": "T206",
+          "fine": "observation"
+        },
+        {
+          "id": "T207",
+          "fine": "recommendation"
+        },
+        {
+          "id": "T208",
+          "fine": "driver"
+        },
+        {
+          "id": "T209",
+          "fine": "observation"
+        },
+        {
+          "id": "T300",
+          "fine": "obligation"
+        },
+        {
+          "id": "T301",
+          "fine": "prohibition"
+        },
+        {
+          "id": "T302",
+          "fine": "obligation"
+        },
+        {
+          "id": "T303",
+          "fine": "technique"
+        },
+        {
+          "id": "T304",
+          "fine": "procedure"
+        },
+        {
+          "id": "T305",
+          "fine": "assumption"
+        },
+        {
+          "id": "T306",
+          "fine": "obligation"
+        },
+        {
+          "id": "T307",
+          "fine": "obligation"
+        },
+        {
+          "id": "T308",
+          "fine": "procedure"
+        },
+        {
+          "id": "T309",
+          "fine": "prohibition"
+        },
+        {
+          "id": "T400",
+          "fine": "structure"
+        },
+        {
+          "id": "T401",
+          "fine": "structure"
+        },
+        {
+          "id": "T402",
+          "fine": "structure"
+        },
+        {
+          "id": "T403",
+          "fine": "observation"
+        },
+        {
+          "id": "T404",
+          "fine": "assumption"
+        },
+        {
+          "id": "T405",
+          "fine": "structure"
+        },
+        {
+          "id": "T406",
+          "fine": "definition"
+        },
+        {
+          "id": "T407",
+          "fine": "structure"
+        },
+        {
+          "id": "T408",
+          "fine": "dependency"
+        },
+        {
+          "id": "T409",
+          "fine": "definition"
+        },
+        {
+          "id": "T500",
+          "fine": "observation"
+        },
+        {
+          "id": "T501",
+          "fine": "decision"
+        },
+        {
+          "id": "T502",
+          "fine": "driver"
+        },
+        {
+          "id": "T503",
+          "fine": "driver"
+        },
+        {
+          "id": "T504",
+          "fine": "recommendation"
+        },
+        {
+          "id": "T505",
+          "fine": "driver"
+        },
+        {
+          "id": "T506",
+          "fine": "background"
+        },
+        {
+          "id": "T507",
+          "fine": "decision"
+        },
+        {
+          "id": "T508",
+          "fine": "decision"
+        },
+        {
+          "id": "T509",
+          "fine": "recommendation"
+        },
+        {
+          "id": "T600",
+          "fine": "observation"
+        },
+        {
+          "id": "T601",
+          "fine": "driver"
+        },
+        {
+          "id": "T602",
+          "fine": "assumption"
+        },
+        {
+          "id": "T603",
+          "fine": "observation"
+        },
+        {
+          "id": "T604",
+          "fine": "dependency"
+        },
+        {
+          "id": "T605",
+          "fine": "observation"
+        },
+        {
+          "id": "T606",
+          "fine": "recommendation"
+        },
+        {
+          "id": "T607",
+          "fine": "observation"
+        },
+        {
+          "id": "T608",
+          "fine": "observation"
+        },
+        {
+          "id": "T609",
+          "fine": "technique"
+        },
+        {
+          "id": "T700",
+          "fine": "decision"
+        },
+        {
+          "id": "T701",
+          "fine": "procedure"
+        },
+        {
+          "id": "T702",
+          "fine": "obligation"
+        },
+        {
+          "id": "T703",
+          "fine": "prohibition"
+        },
+        {
+          "id": "T704",
+          "fine": "driver"
+        },
+        {
+          "id": "T705",
+          "fine": "definition"
+        },
+        {
+          "id": "T706",
+          "fine": "distinction"
+        },
+        {
+          "id": "T707",
+          "fine": "assumption"
+        },
+        {
+          "id": "T708",
+          "fine": "observation"
+        },
+        {
+          "id": "T709",
+          "fine": "dependency"
+        },
+        {
+          "id": "T000",
+          "fine": "driver"
+        },
+        {
+          "id": "T001",
+          "fine": "formula"
+        },
+        {
+          "id": "T002",
+          "fine": "procedure"
+        },
+        {
+          "id": "T003",
+          "fine": "structure"
+        },
+        {
+          "id": "T004",
+          "fine": "definition"
+        },
+        {
+          "id": "T005",
+          "fine": "dependency"
+        },
+        {
+          "id": "T006",
+          "fine": "dependency"
+        },
+        {
+          "id": "T007",
+          "fine": "assumption"
+        },
+        {
+          "id": "T008",
+          "fine": "assumption"
+        },
+        {
+          "id": "T009",
+          "fine": "prohibition"
+        },
+        {
+          "id": "T100",
+          "fine": "structure"
+        },
+        {
+          "id": "T101",
+          "fine": "structure"
+        },
+        {
+          "id": "T102",
+          "fine": "formula"
+        },
+        {
+          "id": "T103",
+          "fine": "technique"
+        },
+        {
+          "id": "T104",
+          "fine": "observation"
+        },
+        {
+          "id": "T105",
+          "fine": "observation"
+        },
+        {
+          "id": "T106",
+          "fine": "structure"
+        },
+        {
+          "id": "T107",
+          "fine": "observation"
+        },
+        {
+          "id": "T108",
+          "fine": "decision"
+        },
+        {
+          "id": "T109",
+          "fine": "observation"
+        },
+        {
+          "id": "T200",
+          "fine": "formula"
+        },
+        {
+          "id": "T201",
+          "fine": "observation"
+        },
+        {
+          "id": "T202",
+          "fine": "observation"
+        },
+        {
+          "id": "T203",
+          "fine": "observation"
+        },
+        {
+          "id": "T204",
+          "fine": "observation"
+        },
+        {
+          "id": "T205",
+          "fine": "observation"
+        }
+      ]
+    },
+    {
+      "rater": 3,
+      "labels": [
+        {
+          "id": "T000",
+          "fine": "driver"
+        },
+        {
+          "id": "T001",
+          "fine": "formula"
+        },
+        {
+          "id": "T002",
+          "fine": "formula"
+        },
+        {
+          "id": "T003",
+          "fine": "structure"
+        },
+        {
+          "id": "T004",
+          "fine": "definition"
+        },
+        {
+          "id": "T005",
+          "fine": "dependency"
+        },
+        {
+          "id": "T006",
+          "fine": "dependency"
+        },
+        {
+          "id": "T007",
+          "fine": "assumption"
+        },
+        {
+          "id": "T008",
+          "fine": "assumption"
+        },
+        {
+          "id": "T009",
+          "fine": "prohibition"
+        },
+        {
+          "id": "T100",
+          "fine": "structure"
+        },
+        {
+          "id": "T101",
+          "fine": "dependency"
+        },
+        {
+          "id": "T102",
+          "fine": "formula"
+        },
+        {
+          "id": "T103",
+          "fine": "technique"
+        },
+        {
+          "id": "T104",
+          "fine": "observation"
+        },
+        {
+          "id": "T105",
+          "fine": "observation"
+        },
+        {
+          "id": "T106",
+          "fine": "structure"
+        },
+        {
+          "id": "T107",
+          "fine": "observation"
+        },
+        {
+          "id": "T108",
+          "fine": "decision"
+        },
+        {
+          "id": "T109",
+          "fine": "observation"
+        },
+        {
+          "id": "T200",
+          "fine": "formula"
+        },
+        {
+          "id": "T201",
+          "fine": "observation"
+        },
+        {
+          "id": "T202",
+          "fine": "observation"
+        },
+        {
+          "id": "T203",
+          "fine": "observation"
+        },
+        {
+          "id": "T204",
+          "fine": "observation"
+        },
+        {
+          "id": "T205",
+          "fine": "observation"
+        },
+        {
+          "id": "T206",
+          "fine": "observation"
+        },
+        {
+          "id": "T207",
+          "fine": "recommendation"
+        },
+        {
+          "id": "T208",
+          "fine": "driver"
+        },
+        {
+          "id": "T209",
+          "fine": "observation"
+        },
+        {
+          "id": "T300",
+          "fine": "obligation"
+        },
+        {
+          "id": "T301",
+          "fine": "prohibition"
+        },
+        {
+          "id": "T302",
+          "fine": "obligation"
+        },
+        {
+          "id": "T303",
+          "fine": "technique"
+        },
+        {
+          "id": "T304",
+          "fine": "procedure"
+        },
+        {
+          "id": "T305",
+          "fine": "assumption"
+        },
+        {
+          "id": "T306",
+          "fine": "obligation"
+        },
+        {
+          "id": "T307",
+          "fine": "obligation"
+        },
+        {
+          "id": "T308",
+          "fine": "procedure"
+        },
+        {
+          "id": "T309",
+          "fine": "prohibition"
+        },
+        {
+          "id": "T400",
+          "fine": "structure"
+        },
+        {
+          "id": "T401",
+          "fine": "structure"
+        },
+        {
+          "id": "T402",
+          "fine": "structure"
+        },
+        {
+          "id": "T403",
+          "fine": "observation"
+        },
+        {
+          "id": "T404",
+          "fine": "assumption"
+        },
+        {
+          "id": "T405",
+          "fine": "structure"
+        },
+        {
+          "id": "T406",
+          "fine": "definition"
+        },
+        {
+          "id": "T407",
+          "fine": "driver"
+        },
+        {
+          "id": "T408",
+          "fine": "dependency"
+        },
+        {
+          "id": "T409",
+          "fine": "distinction"
+        },
+        {
+          "id": "T500",
+          "fine": "observation"
+        },
+        {
+          "id": "T501",
+          "fine": "decision"
+        },
+        {
+          "id": "T502",
+          "fine": "dependency"
+        },
+        {
+          "id": "T503",
+          "fine": "driver"
+        },
+        {
+          "id": "T504",
+          "fine": "recommendation"
+        },
+        {
+          "id": "T505",
+          "fine": "driver"
+        },
+        {
+          "id": "T506",
+          "fine": "background"
+        },
+        {
+          "id": "T507",
+          "fine": "decision"
+        },
+        {
+          "id": "T508",
+          "fine": "structure"
+        },
+        {
+          "id": "T509",
+          "fine": "recommendation"
+        },
+        {
+          "id": "T600",
+          "fine": "observation"
+        },
+        {
+          "id": "T601",
+          "fine": "driver"
+        },
+        {
+          "id": "T602",
+          "fine": "assumption"
+        },
+        {
+          "id": "T603",
+          "fine": "observation"
+        },
+        {
+          "id": "T604",
+          "fine": "dependency"
+        },
+        {
+          "id": "T605",
+          "fine": "observation"
+        },
+        {
+          "id": "T606",
+          "fine": "recommendation"
+        },
+        {
+          "id": "T607",
+          "fine": "observation"
+        },
+        {
+          "id": "T608",
+          "fine": "observation"
+        },
+        {
+          "id": "T609",
+          "fine": "definition"
+        },
+        {
+          "id": "T700",
+          "fine": "decision"
+        },
+        {
+          "id": "T701",
+          "fine": "procedure"
+        },
+        {
+          "id": "T702",
+          "fine": "obligation"
+        },
+        {
+          "id": "T703",
+          "fine": "prohibition"
+        },
+        {
+          "id": "T704",
+          "fine": "driver"
+        },
+        {
+          "id": "T705",
+          "fine": "definition"
+        },
+        {
+          "id": "T706",
+          "fine": "distinction"
+        },
+        {
+          "id": "T707",
+          "fine": "assumption"
+        },
+        {
+          "id": "T708",
+          "fine": "observation"
+        },
+        {
+          "id": "T709",
+          "fine": "dependency"
+        }
+      ]
+    }
+  ]
+}
