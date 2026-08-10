@@ -80,11 +80,11 @@ inter-annotator agreement figure. `κ` below is the measured agreement for the
 |---|---|---|---|
 | `observation` | case | **0.79** | CoreSC `Observation` [VERIFIED] |
 | `event` | case | — | [DESIGN] — concrete by construction (actor + time) |
-| `decision` | case | — | [DESIGN] — concrete by construction (actor + time + choice) |
 | `study` | case | **0.65** | CoreSC `Experiment` [VERIFIED] |
 | `obligation` | rule | — | [DESIGN] — deontic modal is a surface cue |
 | `prohibition` | rule | — | [DESIGN] — deontic modal is a surface cue |
 | `permission` | rule | — | [DESIGN] — deontic modal is a surface cue |
+| `decision` | rule | — | [DESIGN] — a settled choice governs what happens next; note it is the one `rule` label with NO deontic modal to key on (§3.3) |
 | `procedure` | method | **0.74** | CoreSC `Method` [VERIFIED] |
 | `technique` | method | **0.76** | AZ-II `OWNMTHD` [VERIFIED] |
 | `recommendation` | method | — | [DESIGN] |
@@ -197,7 +197,31 @@ predictable collisions in this label set: `observation`/`finding`,
 > **Expected reliability:** lowest in the set. Its anchor category measured
 > κ 0.43. Treat disagreement here as expected, not as a defect.
 
-The remaining seventeen definitions follow this shape.
+### 3.3 `decision` has no modal to key on
+
+`[DESIGN]` The other three `rule` labels share one surface cue: a deontic modal
+(*must*, *may*, *must not*). `decision` has none — "we adopted per-change
+branches" carries no modal at all — so it cannot inherit that cue and needs its
+own:
+
+> **Cue.** A choice is reported as settled, and it governs what happens after
+> it. Typically past-tense and agentive: *adopted*, *chose*, *approved*,
+> *standardised on*, *agreed to*.
+>
+> **Does not fire when:** the statement merely records that something occurred
+> without a choice being made (→ `event`); the choice is proposed rather than
+> settled (→ `recommendation`); an explicit modal is present, in which case the
+> deontic labels take it.
+>
+> **vs `event`:** an event happened; a decision was *chosen* and constrains
+> later action. "The build failed on Tuesday" is an event. "We standardised on
+> the new build system" is a decision.
+>
+> **vs `obligation`:** an obligation states a standing requirement in modal
+> form; a decision states that a requirement was established. If both readings
+> fit, the modal wins.
+
+The remaining sixteen definitions follow this shape.
 
 ---
 
@@ -224,7 +248,12 @@ Resolution is a fixed priority order over the coarse types, applied by code:
 case → rule → method → concept → model → claim
 ```
 
-Most surface-recognizable first. Within a coarse type, the fine label whose test
+Most surface-recognizable first. `[DESIGN]` One consequence worth naming: a
+dated decision fires both `is_event` and `is_decision`, and because `rule`
+outranks `case`, it resolves to `decision`. That is intended — the reason to
+store a decision is that it governs later action, not that it occurred — but it
+means dated decisions leave the `case` bucket entirely, and `multi_fire` is the
+only record that the event reading existed. Within a coarse type, the fine label whose test
 fired; if several fired, the first in the table order.
 
 - **No test fires** → `general`.
