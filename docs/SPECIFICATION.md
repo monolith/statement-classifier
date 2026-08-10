@@ -188,8 +188,19 @@ status: proposition | finding | fact
 
 - `proposition` — put forward, not established. Hedged: *might*, *could*, *we
   propose*, *worth testing*.
-- `finding` — established by the work at hand. Carries its own evidence.
-- `fact` — settled outside this work.
+- `finding` — established by evidence. Something backs it, and the backing is
+  what makes it hold.
+- `fact` — indisputable. Nothing turns on the evidence any more; it is not the
+  kind of thing that gets overturned by the next study.
+
+`[DESIGN]` **This is a maturity ladder and nothing else.** An earlier revision
+defined `finding` as "established by *the work at hand*" and `fact` as "settled
+*outside* this work", which smuggled a second axis — where the knowledge came
+from — into a field meant to record only how established it is. Where a claim
+originated is not visible in the claim. §2.9 measured what a non-surface
+criterion does to agreement, on this codebook: it does not converge. The
+definitions above ask only how firmly the statement is held, which is the
+question `status` exists to answer.
 
 The gain is that a principle's lifecycle stops being a retyping. "More cars in the
 lot predicts stronger same-store sales" begins as `proposition`, becomes
@@ -198,13 +209,13 @@ types that path required changing what the statement *is*; as a status it is an
 update, which is what actually happened — and it makes "show me every principle
 still at `proposition`" a query rather than an archaeology exercise.
 
-`[DESIGN]` **One field, not two.** `fact` and `finding` differ by provenance
-(settled elsewhere versus established here) as much as by maturity, so there is
-an argument for splitting `status` and `provenance` into separate fields.
-`[VERIFIED]` Against that: the closest published two-axis design assumed its
-axes were orthogonal and measured them statistically dependent (Fisher's exact,
-p<0.0001), collapsing into a few dominant cells. Start with one field; split only
-if the data demands it.
+`[DESIGN]` **One field, not two.** With provenance removed from the definitions
+above, the case for a second `provenance` field weakens rather than disappears —
+"who established this" is still worth recording, it is simply not `status`'s job.
+`[VERIFIED]` Against adding one now: the closest published two-axis design
+assumed its axes were orthogonal and measured them statistically dependent
+(Fisher's exact, p<0.0001), collapsing into a few dominant cells. One field;
+split only if the data demands it.
 
 **`[MEASURED]` Known gap, and it is worse than predicted.** A measured result
 that drives nothing — "the signal earned 0.82 Sharpe net of costs over the full
@@ -580,7 +591,7 @@ boundary is stated once rather than twice and cannot drift between two entries.
 > measured occasion (→ `observation`).
 >
 > **Carries `status`** (§2.6): `proposition` when hedged or untested, `finding`
-> when this work established it, `fact` when settled elsewhere. The status is not
+> when evidence backs it, `fact` when it is indisputable. The status is not
 > part of choosing this label — a principle is a principle whether or not it is proven.
 >
 > **Doc.** "Parking-lot vehicle counts predict same-store sales, so changes in
