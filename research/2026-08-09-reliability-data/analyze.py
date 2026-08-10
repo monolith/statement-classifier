@@ -14,8 +14,12 @@ import json
 import sys
 from collections import Counter, defaultdict
 
-sys.path.insert(0, "/home/anatoly/knowledge-ingestion-plugin/src")
-from kip.taxonomy import FAMILY_OF, LEGACY_MAP, TYPE_TESTS, TYPES, UNCLASSIFIED, derive_type
+# The vocabulary this analysis was run against is reproduced inline so the
+# script is self-contained; it originally imported from the pipeline package
+# whose output was being measured.
+from taxonomy_snapshot import (  # noqa: F401
+    FAMILY_OF, LEGACY_MAP, TYPE_TESTS, TYPES, UNCLASSIFIED, derive_type,
+)
 
 
 # --- Agreement statistics -----------------------------------------------------
