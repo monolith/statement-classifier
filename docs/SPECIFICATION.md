@@ -111,9 +111,14 @@ CoreSC measured `Conclusion` 0.89, `Background` 0.87, `Object` 0.81,
 Three consequences, all binding on this spec:
 
 1. The `model` coarse type is the known weak point. Its anchor is the lowest
-   measured category in the scheme. §3 therefore defines `principle` as a
-   surface test (does the statement contain a causal or structural connective
-   linking two named things) rather than as a judgment about explanatory intent.
+   measured category in the scheme. §3 therefore defines `principle` primarily as
+   a surface test — does the statement contain a causal or structural connective
+   linking two named things — rather than as a judgment about explanatory intent.
+   `[MEASURED]` This was tested directly. A non-surface criterion — the
+   **generality test**, asking whether a causal claim outlives the occasion it
+   describes — was written for `principle` and measured *worse* than the surface
+   definition it replaced (§2.9). The prediction above held on this codebook,
+   on the label the prediction named.
 2. Any category that cannot be written as a surface test should be expected to
    land near 0.45 regardless of codebook quality.
 3. Per-category agreement must be reported separately in evaluation. A single
@@ -322,6 +327,50 @@ both are one sentence doing two jobs — the same shape the strip test addresses
 items). `event` is retained deliberately for historical recording. It is
 untested, not disproven — but three item sets drawn from six source types
 failing to produce it is itself a statement about how often it will fire.
+
+### 2.9 A change that was tested and rejected
+
+`[MEASURED]` `principle`'s three remaining collisions were reviewed after §2.8.
+Two were judged genuine semantic overlap that no wording fixes
+(`principle`/`recommendation`, `principle`/`architecture`). The third,
+`principle`/`observation`, was traced to a specific gap: the strip test resolves
+a *measurement that also generalizes*, but says nothing about a **causal
+diagnosis with no measurement in it** — "groupby stopped preserving row order
+after the 2.1 upgrade, which is why the ranks shifted" explains one incident and
+has no numbers to strip.
+
+A **generality test** was written for `principle` to close it: being causal is
+not enough, the claim must still apply to the next case. It was tested as a
+fourth arm — same 152 items, same rotation, one paragraph different
+(`research/2026-08-10-codebook-collision-test-v3c.md`).
+
+**It was rejected.** It resolved five of the six items it was written for, and
+broke five others that had been unanimous:
+
+| | with strip test only | + generality test |
+|---|---|---|
+| `principle`/`observation` collisions | 17 | **19** |
+| fine α, all 152 | 0.904 | 0.901 |
+| fine α, results-dense subset | 0.871 | **0.848** |
+| fine α, mixed subset | 0.930 | 0.943 |
+| `principle` α | 0.861 | **0.797** |
+| `principle` assignments | 123 | **77** |
+
+It cut both ways, which is the tell. Two previously-unanimous *measured results*
+were pulled toward `principle` ("Factor momentum spans stock-level momentum…"),
+because a measured relation is also a standing one — the two tests point
+opposite ways on the same sentence. Three previously-unanimous *system-behaviour
+claims* were pulled toward `observation` ("the gpu autoscaler scales on queue
+depth, not utilization…"), because raters disagreed whether a claim about *our*
+autoscaler generalizes. 51 assignments migrated from `principle` to
+`observation` in total.
+
+`[MEASURED]` **This is the §2.3 prediction confirmed on this codebook, on the
+label §2.3 named.** A criterion that cannot be checked against the surface of
+the sentence introduces a judgment, and the judgment does not converge — even
+when the criterion is correct in every individual case. The causal-diagnosis gap
+identified above is real and remains **open**; it is not worth a scope judgment
+to close it.
 
 ---
 
@@ -622,7 +671,7 @@ rather than patched into a definition.
 | `principle` / `recommendation` | `[MEASURED]` 12 disagreeing rater-pairs in the third test, across two coarse types. `[DESIGN]` **If the statement contains an instruction the reader could act on, it is a `recommendation` — even when it also explains why.** The explanation is context for the advice. "Overlapping returns inflate Sharpe by autocorrelation, so use Newey-West at lag 19" is a `recommendation`; drop the second clause and it becomes a `principle`. This is the mirror of the strip test: a sentence doing two jobs gets one deterministic home. |
 | `decision` / `procedure` | `[MEASURED]` 7 disagreeing rater-pairs in the third test, across two coarse types. `[DESIGN]` **Does the sentence name what was chosen *instead of* something else?** Surface cues: *rather than*, *not X but Y*, *instead of*, *we standardised on*. Naming the rejected alternative makes it a `decision`; stating only how the thing is done makes it a `procedure`. "Models are versioned by artifact SHA-256, not by semantic version" names the alternative — `decision`. |
 | `principle` / `assumption` | Is it the reason it works, or a precondition for it working? A principle explains; an assumption is what must hold for the explanation to survive. |
-| `principle` / `observation` | `[MEASURED]` The largest collision measured in any run (37 disagreeing rater-pairs, control). Apply the **strip test** from §3.2: delete the numbers and the sample from the sentence. If nothing of substance survives, it is an `observation` — *even if the author generalizes from it*. If a causal claim stands on its own without any measurement, it is a `principle`. |
+| `principle` / `observation` | `[MEASURED]` The largest collision measured in any run (37 rater-pairs in the control, 17 after repair and renaming, 11 with the strip test). Apply the **strip test** from §3.2 `observation`: delete the numbers and the sample from the sentence. If nothing of substance survives, it is an `observation` — *even if the author generalizes from it*. If a causal claim stands on its own without any measurement, it is a `principle`. `[MEASURED]` A second, scope-judging test was written for this boundary and measured worse (§2.9); do not reintroduce one without re-testing. |
 | `architecture` / `formula` | Parts or arithmetic? Architecture names components; a formula computes a value. |
 | `architecture` / `dependency` | Inside or outside? Architecture is what the thing is made of; a dependency is something separate it needs. |
 | `assumption` / `dependency` | Must be TRUE, or must be PRESENT? An assumption is a belief the model rests on; a dependency is an input it consumes. |
@@ -913,6 +962,8 @@ in the strip test). 2112 assignments in total.
 | The strip test moves its target boundary | `principle`/`observation` 37 → 17 (repair + renames) → **11** (strip test) |
 | The strip test's aggregate effect is within noise | fine −0.005, coarse +0.012, over 152 items |
 | Two new cross-coarse collisions surfaced | `principle`/`recommendation` 12, `decision`/`procedure` 7; both now in §3.3 |
+| **A scope-judging criterion on `principle` was tested and made things worse** | `principle`/`observation` 17 → **19**; `principle` α 0.861 → **0.797**; rejected (§2.9) |
+| Non-surface criteria do not converge, even when individually correct | 5 target items resolved, 5 unanimous items broken |
 | `event` is unexercised, not disproven | 2 of 608 assignments across three item sets, α ≈ 0 |
 | The definitions separate at all | fine α 0.778 → **0.910**, coarse α 0.791 → **0.915**, across four runs |
 | Coarse tier beats fine on the same annotations | +0.088 (v1), +0.069 (v2); mapping fixed in advance |
@@ -950,7 +1001,8 @@ per-boundary collision counts move far enough to read.
 - The strip test separating `observation` from `principle`. Its effect on the
   target boundary is measured (37 → 11); its effect on aggregate α is not
   distinguishable from noise. The decision to keep it rests on the boundary
-  being cross-coarse, which is a judgment.
+  being cross-coarse, which is a judgment. Its proposed companion, the
+  generality test, WAS measured and was rejected (§2.9).
 - The `principle`/`recommendation` and `decision`/`procedure` rules in §3.3. The
   collisions are measured; the separators are not.
 - Retaining `event` after three item sets failed to exercise it.
