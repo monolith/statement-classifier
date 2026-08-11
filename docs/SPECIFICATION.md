@@ -4,14 +4,30 @@ Assigns a knowledge type to a short statement. One statement in, one
 classification record out. Works on statements extracted from documents and on
 statements taken from conversation.
 
+**Current measured reliability.** Inter-rater Krippendorff α, eight blind raters,
+codebook verbatim, no answer key in existence:
+
+| corpus | α |
+|---|---|
+| 160 statements from eight generated sources | **0.934** |
+| 85 statements from three published documents | **0.894** |
+| `form` field | **1.000** |
+| `status` field | 0.861–0.906 |
+| `scope` field | 0.799–0.940 |
+
+For scale: the argumentative-zoning scheme reached κ 0.71 with seven categories
+and a 111-page codebook; CoreSC reached 0.50–0.57 with eleven. This taxonomy has
+fifteen labels. Full method and caveats in §9 and in
+`research/2026-08-11-definition-pass.md`.
+
 **Evidence convention.** Every claim marked `[VERIFIED]` survived three-vote
 adversarial verification against a primary source; the study, the number, and
 the sample are named inline. Claims marked `[MEASURED]` come from the in-house
-collision test in `research/`, which measured this codebook rather than a
-published one. Claims marked `[DESIGN]` are engineering decisions
-with no supporting measurement — they are labelled that way deliberately, and
-§9 lists every one of them in a single place. Nothing here is presented as
-evidence-backed unless a number is attached to it.
+runs in `research/`, which measured this codebook rather than a published one.
+Claims marked `[DESIGN]` are engineering decisions with no supporting
+measurement — they are labelled that way deliberately, and §9 lists every one of
+them in a single place. Nothing here is presented as evidence-backed unless a
+number is attached to it.
 
 The research this cites ships in `research/`.
 
@@ -1266,15 +1282,47 @@ Everything in this spec, sorted by what backs it.
 
 ### Measured on this codebook, in-house
 
-Five runs, all 4 blind raters per arm, codebook verbatim, no answer key in
-existence: **v1** (72 statements × the 18-label codebook), **v2** (80 fresh
-statements × the 16-label codebook), **control** (v1's 72 × the 16-label
-codebook), **v3** (all 152 × the 15-label codebook, in three arms), and the
-**status ladder** (160 fresh statements from eight sources, type-only versus
-type-plus-status). 4000 assignments in total.
+Twenty-two runs, codebook verbatim, no answer key in existence at any point,
+roughly 10,000 assignments. The measurements that matter are the ones taken with
+**eight raters** — a four-rater run cannot distinguish designs (see *Noise
+floor* below).
+
+**Headline, measured with 8 raters on 160 statements from eight sources:**
+
+| | fine α | unanimity |
+|---|---|---|
+| codebook before the definition pass | 0.844 | 0.72 |
+| **codebook after the definition pass** | **0.934** | **0.86** |
+
+95% CI [0.905, 0.956]; the new codebook wins in **100%** of 400 paired
+resamples. On a 40-statement subset the same codebook reaches **0.947–0.954**.
+
+**On real published documents** — 85 statements extracted from Sharpe's *The
+Arithmetic of Active Management* (1991), De Bondt & Thaler's *Does the Stock
+Market Overreact?* (1985), and a Goldman Sachs market note — **fine α 0.894**,
+95% CI [0.840, 0.942]. Real prose costs roughly 0.05 against generated
+statements.
+
+**Secondary fields:** `form` **1.000**, `scope` 0.799–0.940, `status`
+0.861–0.906.
+
+**Batch size does not matter.** The same 40 statements rated in batches of 5, 10
+and 40 score 0.932, 0.947 and 0.949. Test figures should transfer to
+one-statement-at-a-time production.
 
 | Claim | Number |
 |---|---|
+| **The definition pass is the single largest effect measured** | fine α 0.844 → **0.934**, 8 raters, 160 statements, 100% of paired resamples |
+| It came from domain judgment, not from the measurements | sixteen structural designs moved ±0.05 or lost; fourteen rewritten definitions moved +0.090 |
+| A second round of refinements landed in the noise | nine further rulings: 0.954 → 0.947, beating the prior version in 36% of resamples |
+| Real documents cost about 0.05 against generated statements | 0.894 on 85 statements from three published sources |
+| Two labels carry three-quarters of real financial writing | `observation` 44%, `principle` 32% |
+| `observation`/`principle` is irreducible, not ill-defined | 42% of all disagreement on real documents, after seven attempts to separate it |
+| `form` is the most reliable field in the system | α **1.000** on the synthetic corpus, 1.000 on real documents |
+| Questions were ~50 hidden splits before `form` existed | scattered across six different label pairs |
+| Batch size is irrelevant between 5 and 40 statements | 0.932 / 0.947 / 0.949 |
+| **Self-reported confidence cannot drive `general`** | 0.605 at threshold 90, with 86% of assignments falling through |
+| **Noise floor: one 4-rater run cannot distinguish designs** | the same design run twice scored 0.898 and 0.844 |
 | **v3 improves on v2 with the item set held fixed, in both directions** | fine **+0.096** (72 results-dense items), **+0.072** (80 mixed items) |
 | `driver` → `principle` fixed the weakest label | α 0.623 → **0.910**, same 80 items |
 | `structure` → `architecture` fixed the second-weakest | α 0.727 → **0.851**, same 80 items |
@@ -1296,7 +1344,7 @@ type-plus-status). 4000 assignments in total.
 | **A scope-judging criterion on `principle` was tested and made things worse** | `principle`/`observation` 17 → **19**; `principle` α 0.861 → **0.797**; rejected (§2.9) |
 | Non-surface criteria do not converge, even when individually correct | 5 target items resolved, 5 unanimous items broken |
 | `event` is unexercised, not disproven | 2 of 608 assignments across three item sets, α ≈ 0 |
-| The definitions separate at all | fine α 0.778 → **0.910**, coarse α 0.791 → **0.915**, across four runs |
+| The definitions separate at all | fine α 0.778 → **0.934**, across twenty-two runs |
 | Coarse tier beats fine on the same annotations | +0.088 (v1), +0.069 (v2); mapping fixed in advance |
 | **The v2 restructure did NOT improve reliability** | taxonomy alone: fine **+0.009**, coarse **−0.075** |
 | **The +0.080 v1→v2 headline was the item set, not the taxonomy** | 89% of the fine-tier gain |
