@@ -36,8 +36,10 @@ references — never to reclassify the neighbours.
   "tests": {"is_observation": true, "is_result": false, "…": false},
   "tests_fired": 1,
   "multi_fire": false,
+  "status": "evidenced",
   "modality": null,
   "flags": ["negative_result"],
+  "provenance": {"medium": "chat", "author": "human", "source_id": "…"},
   "taxonomy_version": "sc-v1",
   "prompt_version": "sc-v1-classify-0001",
   "classifier_model": "<model id>",
@@ -180,42 +182,100 @@ status lives elsewhere. An earlier revision nonetheless had a `claim` coarse typ
 whose three labels — `fact`, `finding`, `proposition` — differed mainly by *how
 established* a statement was. That contradicted the contract.
 
-They are now one field on `principle`:
+They are now one field, carried by **every** type:
 
 ```
-status: proposition | finding | fact
+status: floated | proposed | evidenced | settled
 ```
 
-- `proposition` — put forward, not established. Hedged: *might*, *could*, *we
-  propose*, *worth testing*.
-- `finding` — established by evidence. Something backs it, and the backing is
-  what makes it hold.
-- `fact` — indisputable. Nothing turns on the evidence any more; it is not the
-  kind of thing that gets overturned by the next study.
+- `floated` — a point raised without being worked out. To act on it you would
+  have to invent the details yourself. *"what if we looked at parking-lot
+  traffic for the retail names"*
+- `proposed` — one approach, specified enough to build or test. Nothing has
+  validated it. *"weight each name by lot occupancy normalised to store
+  footprint, rebalanced weekly"*
+- `evidenced` — something backs it, and the backing is what makes it hold.
+  *"the lot-count signal held up out of sample, 0.41 Sharpe net"*
+- `settled` — indisputable. Not the kind of thing the next study overturns.
+  *"Sharpe ratio is excess return divided by standard deviation"*
 
-`[DESIGN]` **This is a maturity ladder and nothing else.** An earlier revision
-defined `finding` as "established by *the work at hand*" and `fact` as "settled
-*outside* this work", which smuggled a second axis — where the knowledge came
-from — into a field meant to record only how established it is. Where a claim
-originated is not visible in the claim. §2.9 measured what a non-surface
-criterion does to agreement, on this codebook: it does not converge. The
-definitions above ask only how firmly the statement is held, which is the
-question `status` exists to answer.
+Each rung adds a different thing: `floated` puts a point on the table,
+`proposed` adds **specification**, `evidenced` adds **evidence**, `settled` adds
+**certainty**. The test that separates the first two is the one used throughout
+this codebook — *could you act on this sentence as written, or would you first
+have to invent the parameters?*
 
-The gain is that a principle's lifecycle stops being a retyping. "More cars in the
-lot predicts stronger same-store sales" begins as `proposition`, becomes
-`finding` when the backtest holds, and may harden to `fact`. As three separate
-types that path required changing what the statement *is*; as a status it is an
-update, which is what actually happened — and it makes "show me every principle
-still at `proposition`" a query rather than an archaeology exercise.
+`[MEASURED]` The ladder was tested on 160 fresh statements from eight sources
+with four blind raters
+(`research/2026-08-11-status-ladder-test.md`). It reaches **α 0.896**, higher
+than the type taxonomy scores on the same items (0.877). Per rung: `floated`
+0.938, `settled` 0.914, `evidenced` 0.906, `proposed` 0.851.
 
-`[DESIGN]` **One field, not two.** With provenance removed from the definitions
-above, the case for a second `provenance` field weakens rather than disappears —
-"who established this" is still worth recording, it is simply not `status`'s job.
-`[VERIFIED]` Against adding one now: the closest published two-axis design
-assumed its axes were orthogonal and measured them statistically dependent
-(Fisher's exact, p<0.0001), collapsing into a few dominant cells. One field;
-split only if the data demands it.
+`[MEASURED]` **`floated` and `proposed` separate cleanly** — 2 disagreeing
+rater-pairs, the *least* confused pair in the ladder. This was predicted to be
+the weak boundary, on the reasoning that both are hedged and differ only by
+degree of specification. The prediction was wrong. Merging them changes α by
++0.001, so the fourth rung costs nothing and buys resolution. The real trouble
+is at the top: `evidenced`/`settled` 21 and `evidenced`/`proposed` 20.
+
+The gain is that an idea's lifecycle stops being a retyping. "More cars in the
+lot predicts stronger same-store sales" begins as `floated`, becomes `proposed`
+once it names its parameters, `evidenced` when the backtest holds, and may
+harden to `settled`. As separate types that path required changing what the
+statement *is*; as a status it is an update, which is what actually happens —
+and it makes "show me every principle still at `proposed`" a query rather than
+an archaeology exercise.
+
+`[MEASURED]` **Asking for status does not cost type agreement — it improves
+it.** On the same 160 items, raters asked for type alone reached fine α 0.841;
+raters asked for type *and* status reached **0.877** (coarse 0.840 → 0.896).
+This was the main risk in the two-field design and it inverted. The likely
+mechanism, unproven: with nowhere to record how established a statement is,
+raters were folding that judgment into the type choice; given a field for it,
+the type decision gets cleaner. It is the largest effect of its kind measured
+here, but four raters and no confidence intervals — treat the direction as more
+solid than the magnitude.
+
+`[MEASURED]` **Status is not a restatement of type, but its value is
+concentrated.** The published two-axis design this spec cites failed because its
+axes turned out statistically dependent and collapsed into a few cells, so the
+same test was run here: Cramér's V = 0.595, mutual information 0.845 of 1.721
+bits — **49% of status is predictable from type, 51% is not**. Dependent, not
+collapsed.
+
+Where the independent half lives, measured as residual entropy of status given
+type:
+
+| type | n | bits | reading |
+|---|---|---|---|
+| `dependency` | 7 | 1.84 | status carries almost everything |
+| `procedure` | 48 | 1.74 | |
+| `recommendation` | 94 | 1.73 | |
+| `principle` | 44 | 1.72 | |
+| `architecture` | 18 | 1.53 | |
+| `distinction` | 9 | 1.39 | |
+| `decision` | 29 | 1.18 | |
+| `event` | 43 | 0.82 | |
+| `background` | 35 | 0.50 | |
+| `observation` | 196 | 0.19 | 97% `evidenced` — near-redundant |
+| `definition` | 40 | **0.00** | 100% `settled` — carries nothing |
+
+`status` earns its place exactly where you would want it — on proposals,
+approaches, and causal claims. On `definition` it is a constant. That is an
+argument for scoping the field rather than dropping it, and it is not yet acted
+on: v1 asks for status on every type, and the cost of asking is the 0% `n/a`
+rate below rather than any measured loss.
+
+`[MEASURED]` **`n/a` is nearly unused: 9 of 640 (1.4%).** Status applies to
+almost every statement raters saw, including rules and events. The one exception
+is `general`, where half the assignments were `n/a` — consistent with `general`
+being a residual rather than a kind.
+
+`[DESIGN]` **Provenance is a separate field and is not classified.** Where a
+record came from — chat or document, human or model, which thread — is known at
+ingestion. Recording it costs no agreement because nobody infers it. It is *not*
+`status`'s job: status says how firmly a statement is held now, provenance says
+where it was born. Both are worth having; only one of them can be got wrong.
 
 **`[MEASURED]` Known gap, and it is worse than predicted.** A measured result
 that drives nothing — "the signal earned 0.82 Sharpe net of costs over the full
@@ -590,9 +650,10 @@ boundary is stated once rather than twice and cannot drift between two entries.
 > `assumption`); what it needs in order to run (→ `dependency`); a single
 > measured occasion (→ `observation`).
 >
-> **Carries `status`** (§2.6): `proposition` when hedged or untested, `finding`
-> when evidence backs it, `fact` when it is indisputable. The status is not
-> part of choosing this label — a principle is a principle whether or not it is proven.
+> **Carries `status`** (§2.6), as every type does: `floated` when raised but not
+> worked out, `proposed` when specified but unvalidated, `evidenced` when
+> something backs it, `settled` when indisputable. The status is not part of
+> choosing this label — a principle is a principle whether or not it is proven.
 >
 > **Doc.** "Parking-lot vehicle counts predict same-store sales, so changes in
 > counts lead reported revenue by roughly one quarter."
@@ -772,7 +833,30 @@ resolved to `rule`; otherwise retained but not enforced.
 property associated with reliable categories (§3), but this specific field has
 not been evaluated.
 
-### 5.2 Flags
+### 5.2 `provenance` — where the record came from
+
+```
+provenance: { medium, author, source_id }
+```
+
+`medium` — `chat` / `document` / `transcript` / `code`. `author` — `human` /
+`model`, with the model identifier when known. `source_id` — the thread,
+document, or file.
+
+`[DESIGN]` **Nothing here is classified.** Every value is known to the
+ingestion pipeline before the classifier is called, so provenance costs no
+agreement — it cannot be got wrong by a model that never infers it. This is the
+opposite of the provenance that was *removed* from `status` in §2.6: "who
+established this claim" is a judgment about the world that the sentence does not
+contain; "which Slack thread did this line come from" is a fact the reader
+already has.
+
+`[MEASURED]` It is also operationally load-bearing. Chat statements classify at
+fine α 0.811 against 0.940 for document statements on the same codebook and the
+same run (§6). Without provenance on the record that gap is a fact nobody can
+act on; with it, a consumer can weight or filter by medium.
+
+### 5.3 Flags
 
 `negative_result` — the statement reports an absence, null, or no-effect
 finding. `caveat` — the statement limits, scopes, or excepts something else.
@@ -783,7 +867,7 @@ similarity — "X does not work" and "X works" are near neighbours — so withou
 explicit marker it is unrecoverable downstream. That is a mechanism argument,
 not a measurement.
 
-### 5.3 What this classifier does not produce
+### 5.4 What this classifier does not produce
 
 - **No confidence score.** `[VERIFIED]` Verbalized confidence reliability
   depends strongly on how the model is asked, with no universal best method
@@ -792,8 +876,11 @@ not a measurement.
   their accuracy (arXiv 2412.14737). All of it was measured on closed-book QA,
   never on classification. Uncertainty is expressed structurally instead:
   `tests_fired == 0` is abstention, `tests_fired >= 2` is ambiguity.
-- **No truth judgment, no epistemic status, no relationships between
-  statements.** Out of scope by §1.
+- **No truth judgment and no relationships between statements.** Epistemic
+  *maturity* is produced — that is `status` (§2.6) — but whether a statement is
+  *correct* is not, and neither are edges between statements. Relations
+  (`resolved_by`, `opposes`) are the natural next layer and are deliberately out
+  of scope for v1.
 
 ---
 
@@ -958,11 +1045,12 @@ Everything in this spec, sorted by what backs it.
 
 ### Measured on this codebook, in-house
 
-Four runs, all 4 blind raters per arm, codebook verbatim, no answer key in
+Five runs, all 4 blind raters per arm, codebook verbatim, no answer key in
 existence: **v1** (72 statements × the 18-label codebook), **v2** (80 fresh
 statements × the 16-label codebook), **control** (v1's 72 × the 16-label
-codebook), **v3** (all 152 × the 15-label codebook, in two arms differing only
-in the strip test). 2112 assignments in total.
+codebook), **v3** (all 152 × the 15-label codebook, in three arms), and the
+**status ladder** (160 fresh statements from eight sources, type-only versus
+type-plus-status). 4000 assignments in total.
 
 | Claim | Number |
 |---|---|
@@ -972,6 +1060,17 @@ in the strip test). 2112 assignments in total.
 | Merging `technique` into `procedure` helped `procedure` | α 0.760 → 0.834, same 80 items |
 | The strip test moves its target boundary | `principle`/`observation` 37 → 17 (repair + renames) → **11** (strip test) |
 | The strip test's aggregate effect is within noise | fine −0.005, coarse +0.012, over 152 items |
+| **Asking for status IMPROVES type agreement** | fine +0.036, coarse +0.056, same 160 items |
+| The status ladder is more reliable than the type taxonomy | status α **0.896** vs type α 0.877, same items |
+| `floated`/`proposed` separate cleanly — the predicted weak boundary was not weak | 2 rater-pairs, least confused in the ladder |
+| The ladder's real difficulty is at the top | `evidenced`/`settled` 21, `evidenced`/`proposed` 20 |
+| Status is dependent on type but does not collapse | Cramér's V 0.595; 49% predictable from type, 51% not |
+| Status is worthless on some types and carries everything on others | residual entropy 0.00 on `definition`, 1.84 on `dependency` |
+| Raters do not want an `n/a` status | 9 of 640 (1.4%) |
+| All fifteen labels exercised, for the first time | `event` 2 → 45, `background` 0 → 35, `distinction` 7 → 17 |
+| Research-results prose is the hardest source, on a fourth independent corpus | type α 0.642 vs 0.899 for an RFC |
+| Chat classifies materially worse than documents | fine α 0.811 vs 0.940, same codebook, same run |
+| Two new collisions only visible once coverage existed | `background`/`event` 11, `distinction`/`principle` 7 |
 | Two new cross-coarse collisions surfaced | `principle`/`recommendation` 12, `decision`/`procedure` 7; both now in §3.3 |
 | **A scope-judging criterion on `principle` was tested and made things worse** | `principle`/`observation` 17 → **19**; `principle` α 0.861 → **0.797**; rejected (§2.9) |
 | Non-surface criteria do not converge, even when individually correct | 5 target items resolved, 5 unanimous items broken |
