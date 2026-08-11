@@ -627,12 +627,22 @@ boundary is stated once rather than twice and cannot drift between two entries.
 
 #### `background` → `concept` · anchor κ 0.87
 
-> **Cue.** Context a reader needs, presented as generally accepted and not as
-> the author's own contribution or measurement.
+> **Cue.** Information that enriches understanding without answering anything.
+> Set against *who / what / why / when / where*, it is the historical and
+> contextual surround of an answer rather than the answer itself. It is not a
+> direction, not an instruction, and not a claim being advanced.
 >
-> **Excludes:** a term being defined (→ `definition`); a checkable claim
-> advanced as the author's own (→ `principle`); a measured result from the
-> present work (→ `observation`).
+> **Last resort.** `background` loses every tie. If any other test fires, that
+> label wins — a dated change is an `event`, a term being fixed is a
+> `definition`, a contrast is a `distinction`, an explanation is a `principle`.
+> `background` is what remains when a statement informs but claims nothing,
+> instructs nothing, and defines nothing. `[MEASURED]` It was previously written
+> as a positive category — "context a reader needs, presented as generally
+> accepted" — which describes a large share of all expository prose, and it
+> collided with `event` 11 times, `obligation` 4 and `principle` 4 on the first
+> corpus that exercised it.
+>
+> **Excludes:** everything else. That is the point.
 >
 > **Doc.** "Cross-sectional momentum has been documented in equity markets since
 > Jegadeesh and Titman."
@@ -771,13 +781,39 @@ study compared natively-binary features against natively-multiclass ones; it did
 not decompose one set into the other. A claim asserting a tested decomposition
 design was refuted 1-2 in verification.
 
+**`[MEASURED]` The inference has now been tested directly, and it does not
+hold.** Five coarse families × four blind raters, each agent seeing one family's
+definitions and nothing else, on the same 160 items as the single-choice run
+(`research/2026-08-11-boolean-battery-test.md`):
+
+| | fine α | coarse α |
+|---|---|---|
+| single choice of fifteen | **0.877** | **0.896** |
+| this mechanism, resolved by the priority order below | 0.785 | 0.805 |
+
+Per-test agreement is *good* — eleven of fifteen tests exceed α 0.87. The loss
+is entirely in resolution: raters fire slightly different **sets**, and priority
+turns a small difference in the set into a different label. On 27 of 160 items
+all four raters fired a label in common and still resolved differently.
+
+`[MEASURED]` **The priority order below is worse than resolving alphabetically**
+(0.785 vs 0.801). Of six rules tried on the same fired sets, the best was "the
+most reliable test wins", at 0.829 — still 0.048 below simply asking for one
+label. Retain this section for its one irreplaceable property, **multi-label
+output**: 38% of statements fire two or more tests, and asked separately raters
+say yes to both. That is information single choice destroys. It is not, on this
+evidence, a way to raise agreement.
+
 Resolution is a fixed priority order over the coarse types, applied by code:
 
 ```
-case → rule → method → concept → model → claim
+case → rule → method → concept → model        …and `background` last of all
 ```
 
-Most surface-recognizable first. `[DESIGN]` One consequence worth naming: a
+Most surface-recognizable first. `background` is exempted from its coarse type's
+position and resolved **last**, below every other fine label in the taxonomy: it
+wins only when nothing else fired at all. See §3.2 — it is defined as the
+residual of the `concept` family, not as a competitor within it. `[DESIGN]` One consequence worth naming: a
 dated decision fires both `is_event` and `is_decision`, and because `rule`
 outranks `case`, it resolves to `decision`. That is intended — the reason to
 store a decision is that it governs later action, not that it occurred — but it
