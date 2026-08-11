@@ -23,8 +23,15 @@ The research this cites ships in `research/`.
 classify(statement: str, context?: str) -> Classification
 ```
 
-**Input.** One statement. Optional surrounding context, used only to resolve
-references — never to reclassify the neighbours.
+**Input.** One statement, plus the surrounding context it appeared in. The
+context is used to **classify that statement** — a line is often only readable
+against what came before it — but never to reclassify the neighbours themselves.
+One statement in, one record out.
+
+`[DESIGN]` This reverses an earlier restriction that limited context to pronoun
+and ellipsis resolution. Several statements measured as unclassifiable in
+isolation are unambiguous in place, and no evidence was found either way on how
+much context a conversational statement needs (§6).
 
 **Output.** A classification record:
 
@@ -37,6 +44,7 @@ references — never to reclassify the neighbours.
   "tests_fired": 1,
   "multi_fire": false,
   "status": "evidenced",
+  "form": "statement",
   "modality": null,
   "flags": ["negative_result"],
   "provenance": {"medium": "chat", "author": "human", "source_id": "…"},
@@ -59,7 +67,7 @@ this", never "is this correct". Epistemic status lives elsewhere.
 
 ## 2. The taxonomy
 
-Six coarse types. Fifteen fine labels, each mapping to exactly one coarse
+Five coarse types. Fifteen fine labels, each mapping to exactly one coarse
 type. The mapping is a lookup table, not a judgment.
 
 ### 2.1 Coarse types
@@ -67,10 +75,10 @@ type. The mapping is a lookup table, not a judgment.
 | Coarse | The question it answers |
 |---|---|
 | `case` | What happened, on one occasion? |
-| `rule` | What must, may, or must not happen? |
-| `method` | How is something done? |
+| `method` | What is done, required, forbidden, advised, or settled? |
 | `concept` | What does this term mean? |
-| `model` | What drives this, how is it built, what does it take for granted? |
+| `model` | Why does this hold, what does it rest on, and how is it computed? |
+| `system` | What is the thing built from, and what does it need to run? |
 | `general` | — assigned by code when no test fires |
 
 ### 2.2 Fine labels, with measured reliability where it exists
@@ -83,19 +91,19 @@ inter-annotator agreement figure. `κ` below is the measured agreement for the
 |---|---|---|---|
 | `observation` | case | **0.79** | CoreSC `Observation` [VERIFIED] |
 | `event` | case | — | [DESIGN] — concrete by construction (actor + time) |
-| `obligation` | rule | — | [DESIGN] — deontic modal is a surface cue |
-| `prohibition` | rule | — | [DESIGN] — deontic modal is a surface cue |
-| `decision` | rule | — | [DESIGN] — a settled choice governs what happens next; note it is the one `rule` label with NO deontic modal to key on (§3.3) |
+| `obligation` | method | — | [DESIGN] — deontic modal is a surface cue |
+| `prohibition` | method | — | [DESIGN] — deontic modal is a surface cue |
+| `decision` | method | — | [DESIGN] — a settled choice governs what happens next; note it is the one `rule` label with NO deontic modal to key on (§3.3) |
 | `procedure` | method | **0.74** | CoreSC `Method` [VERIFIED] |
 | `recommendation` | method | — | [DESIGN] |
 | `definition` | concept | **0.81** | CoreSC `Object` [VERIFIED] |
 | `distinction` | concept | — | [DESIGN] |
 | `background` | concept | **0.87** | CoreSC `Background` [VERIFIED] |
 | `principle` | model | — | [DESIGN] — the causal idea the model runs on; carries `status` (§2.6) |
-| `architecture` | model | — | [DESIGN] — compositional cue (*is composed of*) |
+| `architecture` | system | — | [DESIGN] — compositional cue (*is composed of*) |
 | `formula` | model | — | [DESIGN] — an equation is the most surface-detectable cue in the set |
 | `assumption` | model | — | [DESIGN] — marker words (*assumes*, *conditional on*) |
-| `dependency` | model | — | [DESIGN] — marker words (*requires*, *depends on*) |
+| `dependency` | system | — | [DESIGN] — marker words (*requires*, *depends on*) |
 
 Source for all CoreSC figures: Liakata et al., LREC 2010, per-category
 one-vs-rest Cohen's κ, 41 chemistry/biochemistry papers, expert annotators.
@@ -128,17 +136,53 @@ Three consequences, all binding on this spec:
 
 ### 2.4 `general`
 
-`general` is assigned **by code**, when no fine test fires. It is never offered
-to the model, never named in the prompt, and has no definition the model can see.
+`general` is assigned **by code**. It is never offered as a label, never named
+in the prompt, and has no definition the model can see.
 
-`[VERIFIED]` This is not stylistic. A study of four frontier models given a
-named fallback plus the instruction "assign it for unknown cases" recorded a
-96.1% full-agreement ratio with Fleiss κ of **−0.001**, and the four models
-jointly identified the minority class **zero** times, missing 75% of it against
-a human reference (MultiSoc-4D, 58k+ comments; ChatGPT, Gemini, Claude, Grok).
-The paper ran no ablation, so the *causal* reading was refuted 0-3 in
-verification — treat this as a strong warning rather than a proven mechanism.
-Details in `research/2026-08-10-classifier-design-research-runC.md`.
+`[VERIFIED]` A **named** fallback given to the model is catastrophic: four
+frontier models given one plus "assign it for unknown cases" recorded 96.1%
+agreement with Fleiss κ **−0.001** and identified the minority class zero times
+(MultiSoc-4D, 58k+ comments). Whatever triggers `general`, the model must not
+see it.
+
+`[MEASURED]` **Self-reported confidence does not work as the trigger, and this
+was tested directly.** Raters scored all fifteen labels 0–100 on the full
+corpus; code then assigned `general` when no label cleared a bar, or when
+several did:
+
+| rule | α | share sent to `general` |
+|---|---|---|
+| pick one label directly | **0.934** | — |
+| score all fifteen, take the highest | 0.930 | 0% |
+| margin ≥ 5 between first and second | 0.893 | 4% |
+| margin ≥ 20 | 0.866 | 25% |
+| absolute threshold 75 | 0.892 | 42% |
+| **absolute threshold 90** | **0.605** | **86%** |
+| absolute threshold 95 | 0.140 | 99% |
+
+Two findings. **The ordering is sound** — argmax over the scores reaches 0.930,
+statistically level with asking for one label. **Every abstention rule loses.**
+
+`[MEASURED]` The reason is not miscalibration. **Raters disagree about their own
+uncertainty more than they disagree about the label.** Eight raters can all pick
+`procedure` and score it 95, 88, 72, 91, 60, 85, 78, 93; under any threshold
+some abstain and some do not, so a statement they *unanimously agreed on*
+becomes a disagreement between `procedure` and `general`. Abstention does not
+filter noise — it manufactures it, by adding a second judgement noisier than the
+first.
+
+This is the third measured instance of the same pattern, after booleans plus
+priority resolution (−0.092, §4.1) and interior tiers (−0.11,
+`research/2026-08-11-instrument-bakeoff.md`). **Anything that turns one
+classification decision into two costs more in the second step than it gains in
+the first.**
+
+`[DESIGN]` `general` is therefore triggered by **disagreement across runs**, not
+by self-report: classify a statement more than once and, where the runs
+disagree, assign `general`. That reads the same signal the confidence rule was
+after — nothing fits cleanly — from a source that is not self-assessment. The
+number of runs and the disagreement rule are evaluation parameters (§7) and are
+not yet measured.
 
 `general`'s share of the corpus is a standing health metric (§7).
 
@@ -489,13 +533,18 @@ boundary is stated once rather than twice and cannot drift between two entries.
 
 #### `observation` → `case` · anchor κ 0.79
 
-> **Cue.** Reports something seen or measured on a particular occasion, without
-> claiming it holds in general. Usually carries a time, a run, a period, or a
-> named instance.
+> **Cue.** **Insight extrapolated from multiple events.** A pattern or reading
+> drawn across more than one occasion — not definitive enough to be a rule or a
+> recommendation. Anecdotal by nature: it holds so far, on what has been seen.
 >
-> **Excludes:** an explanation of why an effect exists, stated without the
-> measurement behind it (→ `principle`); the description of how a measurement
-> was set up (→ `procedure`).
+> **More than one.** A single occurrence reported as fact is an `event`. It
+> becomes an `observation` when the sentence reads across occasions — a rate, a
+> repetition, a sample, a trend, a mean.
+>
+> **Excludes:** the occurrence itself, however quantified (→ `event`); an
+> established difference between two options (→ `distinction`); reasoning from
+> fundamentals (→ `principle`); something definitive enough to be followed
+> (→ `procedure`, `obligation`, `prohibition` or `recommendation`).
 >
 > **Strip test.** An empirical result is an `observation` *even when the author
 > generalizes from it*. Delete the numbers and the sample from the sentence: if
@@ -508,12 +557,17 @@ boundary is stated once rather than twice and cannot drift between two entries.
 
 #### `event` → `case`
 
-> **Cue.** Something happened, with a time and an actor or subject. No choice is
-> being reported and nothing is being measured.
+> **Cue.** **A single thing that happened, reported as fact.** Singular and
+> factual. Quantity does not disqualify it — an incident report full of counts
+> and losses is still one occurrence.
 >
-> **Excludes:** a settled choice (→ `decision`); a measurement taken (→
-> `observation`); a recurring or generally accepted state of affairs (→
-> `background`).
+> **One versus many.** An `event` is one occasion. An `observation` extrapolates
+> across several. *"The kill switch cancelled all 1,912 resting orders in 310 ms
+> with zero rejects"* is one occurrence — `event`. *"Third timeout this week,
+> same node every time — the nic is cooked"* reads across three — `observation`.
+>
+> **Excludes:** a reading drawn from what happened (→ `observation`); a settled
+> choice (→ `decision`); a generally accepted state of affairs (→ `background`).
 >
 > **Doc.** "The prime broker raised margin requirements on the fund's short book
 > on 14 March 2026."
@@ -522,32 +576,48 @@ boundary is stated once rather than twice and cannot drift between two entries.
 
 ---
 
-#### `obligation` → `rule`
+#### `obligation` → `method`
 
-> **Cue.** A deontic modal of requirement — *must*, *shall*, *is required to* —
-> with someone accountable to it.
+> **Cue.** **What is owed to a third party.** A requirement is an `obligation`
+> only when there is someone outside the doing party to whom it is owed — a
+> regulator, an exchange, a counterparty, a client, a contract. The positive
+> counterpart of `prohibition`.
 >
-> **Excludes:** a requirement stated in the negative (→ `prohibition`); advice
-> with no accountability (→ `recommendation`). A statement that merely *permits*
-> rather than requires has no label of its own and falls to `general`.
+> **Internal requirements are `procedure`.** A rule the organisation imposes on
+> itself, however mandatory it sounds, is how the organisation works: it belongs
+> in the manual. *"Under Regulation T, initial margin is 50 percent"* is owed to
+> a regulator — `obligation`. *"A new signal trades in shadow for sixty sessions
+> before the Investment Committee will consider an allocation"* is owed to
+> nobody outside — `procedure`.
+>
+> **Judge the action, not the grammar.** A requirement stated with a negation is
+> still an obligation if what it demands is an action.
+>
+> **Excludes:** what must NOT be done (→ `prohibition`); an internal requirement
+> (→ `procedure`); advice with no accountability (→ `recommendation`).
 >
 > **Doc.** "Positions must be marked to market daily before 17:00 ET."
 > **Chat.** "every eval run has to log its seed and commit hash"
 
-#### `prohibition` → `rule`
+#### `prohibition` → `method`
 
-> **Cue.** A deontic modal of forbidding — *must not*, *may not*, *never*, *is
-> prohibited from*.
+> **Cue.** **The negative case of `procedure`** — where a `procedure` says what
+> to do, a `prohibition` says what must not be done. A hard rule, manual-grade:
+> it would be printed as an absolute and it can be *violated*.
 >
-> **Excludes:** a positively-stated requirement, even where the effect is
-> similar (→ `obligation`); a warning about consequences with no forbidding
-> force (→ `principle`).
+> **Test.** Could someone be in breach of it? A `prohibition` was set by someone
+> with standing, and doing it anyway is a breach. A peer pointing away from
+> something out of experience — *"dead end, don't redo it"* — creates no breach
+> and is a `recommendation`, however imperative it sounds.
+>
+> **Excludes:** a positively-stated requirement (→ `obligation`); advice against
+> an action with no accountability behind it (→ `recommendation`).
 >
 > **Doc.** "The desk may not carry overnight exposure in names below $50m ADV."
 > **Chat.** "never train on anything that overlaps the eval split"
 
 
-#### `decision` → `rule`
+#### `decision` → `method`
 
 > **Cue.** A choice reported as settled, which governs what happens after it.
 > Typically past-tense and agentive: *adopted*, *chose*, *approved*,
@@ -566,17 +636,27 @@ boundary is stated once rather than twice and cannot drift between two entries.
 
 #### `procedure` → `method` · anchor κ 0.74
 
-> **Cue.** How something is done — either ordered steps to follow, or a named
-> approach used to achieve an end. `[MEASURED]` These were two labels
-> (`procedure` and `technique`) until the second collision test measured
-> `technique` at α 0.588, the weakest in the set, colliding with `procedure`
-> six times. Merged.
+> **Cue.** An established operational instruction: **how the system is used.**
+> It could be pasted into a user manual unchanged and read as something to be
+> followed every time.
 >
-> **Excludes:** why the approach works (→ `principle`); how a thing is assembled
-> or sourced (→ `architecture`); the arithmetic that computes a value (→
-> `formula`); one investigation that was run (→ `observation`); a constraint
-> someone is accountable to (→ `obligation`); advice about which approach to
-> pick (→ `recommendation`).
+> **Test.** Is the sentence *reporting practice* or *putting something forward*?
+> Reporting is `procedure`: *we use*, *backtests are charged*, *the loader runs
+> at 07:00*, *positions are marked daily*.
+>
+> **Excludes:** anything put forward rather than reported — *we propose*,
+> *proposal:*, *we recommend*, *is preferable*, *should*, *worth*, *what if*,
+> *try* (→ `recommendation`); anything hedged — *I think*, *probably*,
+> *usually*, *not sure* (→ `recommendation`); anything announced as a
+> contribution to a discussion — *unpopular take*, *cheapest idea*,
+> *counterpoint* (→ `recommendation`); how the system is **built** rather than
+> used (→ `architecture`); a settled configuration choice among real
+> alternatives (→ `decision`); the arithmetic defining a quantity (→ `formula`);
+> a constraint someone is accountable to (→ `obligation`).
+>
+> `[MEASURED]` These were two labels (`procedure` and `technique`) until the
+> second collision test measured `technique` at α 0.588, the weakest in the set.
+> Merged.
 >
 > **Doc.** "To build the factor: winsorize at 1%, z-score cross-sectionally,
 > then neutralize by sector and size."
@@ -585,9 +665,10 @@ boundary is stated once rather than twice and cannot drift between two entries.
 
 #### `recommendation` → `method`
 
-> **Cue.** Advice on what ought to be done, with no requirement force and no
-> report that it was settled. Hedged: *should*, *prefer*, *is worth*, *probably
-> want to*.
+> **Cue.** **Prescribes a course of action** — advice on what ought to be done,
+> with no requirement force and nothing settled. Practical and experiential,
+> bearing on a choice where more than one valid option exists, and usually
+> conversational in register.
 >
 > **Excludes:** a requirement someone is accountable to (→ `obligation`); a
 > choice already made (→ `decision`); a bare description of an approach (→
@@ -601,8 +682,13 @@ boundary is stated once rather than twice and cannot drift between two entries.
 
 #### `definition` → `concept` · anchor κ 0.81
 
-> **Cue.** Fixes what a term means. The grammatical centre is *X is / means /
-> refers to / is defined as Y*.
+> **Cue.** **Fixes a key topic.** It states what a term means, and the term is
+> load-bearing — remove the definition and the reader cannot follow what
+> follows. The grammatical centre is *X is / means / refers to / is defined as
+> Y*.
+>
+> **Against `background`.** A `definition` defines the topic. `background` adds
+> colour around it without defining anything.
 >
 > **Excludes:** a contingent statement that could turn out false, which fixes no
 > terminology (→ `principle`); a contrast drawn between two terms (→
@@ -614,12 +700,18 @@ boundary is stated once rather than twice and cannot drift between two entries.
 
 #### `distinction` → `concept`
 
-> **Cue.** Contrasts two or more terms in order to fix the boundary between
-> them. Both sides are named and the difference is the payload.
+> **Cue.** A **qualifier between multiple methods or options**, resting on
+> established differences rather than on one occasion's measurement. The
+> contrast is the payload: two things are named and what separates them is the
+> point.
 >
-> **Excludes:** a single term being defined (→ `definition`); two quantities
-> moving against each other, or a claim that one option is better (→
-> `principle`).
+> **Proven, not anecdotal.** A `distinction` cites differences that hold — fee
+> schedules, contract terms, published behaviour. If the contrast rests on what
+> someone saw once, it is an `observation`.
+>
+> **Excludes:** a single term being defined (→ `definition`); a theoretical
+> claim reasoned from fundamentals (→ `principle`); a one-off comparison
+> someone happened to measure (→ `observation`).
 >
 > **Doc.** "Realized volatility is measured from past returns; implied
 > volatility is backed out of option prices."
@@ -627,10 +719,19 @@ boundary is stated once rather than twice and cannot drift between two entries.
 
 #### `background` → `concept` · anchor κ 0.87
 
-> **Cue.** Information that enriches understanding without answering anything.
-> Set against *who / what / why / when / where*, it is the historical and
-> contextual surround of an answer rather than the answer itself. It is not a
-> direction, not an instruction, and not a claim being advanced.
+> **Cue.** **Additional colour or history.** It enriches understanding of the
+> surround — but **it does not define the topic itself**. Strip it out and the
+> topic is still defined; you have only lost context.
+>
+> **Against `definition`.** A `definition` is key to defining a key topic.
+> `background` sits beside the topic and adds shading.
+>
+> **It is contextual, and usually announced** — *for context*, *historically*,
+> *the desk began in*, the opening chapter of a handbook. Decide from the
+> surrounding context (§1).
+>
+> **Against `observation`.** An `observation` extrapolates across events.
+> `background` supplies the surround.
 >
 > **Last resort.** `background` loses every tie. If any other test fires, that
 > label wins — a dated change is an `event`, a term being fixed is a
@@ -652,8 +753,14 @@ boundary is stated once rather than twice and cannot drift between two entries.
 
 #### `principle` → `model`
 
-> **Cue.** Asserts that one thing causes, predicts, or explains another, as the
-> reason a model or conclusion works. Answers "why should this hold?"
+> **Cue.** **The theory or rule** behind something — reasoning from fundamentals
+> about why it holds or why it is built that way. First principles, not
+> comparison, not measurement, and not implementation.
+>
+> **Test.** Would it survive without the specific case in front of you? A
+> `principle` is stated at the level of the idea. A statement that compares two
+> named options is a `distinction`; one that reports what was seen is an
+> `observation`, even when it explains itself.
 >
 > **Excludes:** how the thing is built or sourced (→ `architecture`); the equation
 > that computes it (→ `formula`); what must be true for it to hold (→
@@ -669,13 +776,26 @@ boundary is stated once rather than twice and cannot drift between two entries.
 > counts lead reported revenue by roughly one quarter."
 > **Chat.** "the whole thesis is more cars means the store is doing better"
 
-#### `architecture` → `model`
+#### `architecture` → `system`
 
-> **Cue.** How the thing is composed, assembled, or sourced — named parts and
-> how they fit. *Is composed of*, *consists of*, *is built from*, *comes from*.
+> **Cue.** **Implementational design** — the construction of a physical or
+> software system: what it is built out of, what components it has, what they
+> are. Not a logical scheme and not a configuration.
 >
-> **Excludes:** why it works (→ `principle`); the arithmetic (→ `formula`); steps a
-> reader should follow (→ `procedure`); something the build merely needs present
+> **Against `principle`.** `architecture` is the implementation; `principle` is
+> the theory or rule behind it. The same system has both — how it is built, and
+> why it is built that way.
+>
+> **The elevator test.** What the doors are made of and how the hoist is
+> assembled is `architecture`. How to call the car is `procedure`.
+>
+> **Actual, not proposed.** `architecture` describes a real implementation,
+> including a specification of one that has been committed to. A system being
+> *put forward* is a `recommendation`, however concrete its detail.
+>
+> **Excludes:** how the system is *used* (→ `procedure`); a settled setting or
+> configuration choice (→ `decision`); why it works (→ `principle`); the
+> arithmetic (→ `formula`); something separate the build needs present
 > (→ `dependency`).
 >
 > **Doc.** "Parking-lot counts are derived from daily satellite imagery, matched
@@ -684,12 +804,26 @@ boundary is stated once rather than twice and cannot drift between two entries.
 
 #### `formula` → `model`
 
-> **Cue.** States how a quantity is computed — an equation, or an explicit
-> arithmetic definition in prose.
+> **Cue.** **Mathematical or scientific in nature** — an equation, an arithmetic
+> definition in prose, or a statement that defines something in mathematical or
+> scientific terms. A `formula` says what a quantity *equals*; it instructs
+> nobody.
+>
+> **No opinions in a formula.** A formula computes and stops. If the sentence
+> also evaluates, judges or hedges the result, that part is not formula.
+>
+> **Against `recommendation`.** A `recommendation` prescribes a course of
+> action. A `formula` prescribes nothing — it defines.
+>
+> **Test.** Is the arithmetic the payload, or machinery inside a policy? "OCC
+> divides the strike by four and multiplies contracts by four" defines the
+> adjustment — `formula`. "The book targets 10% vol on a 0.94-decay covariance;
+> if realized exceeds 13% the scaler cuts gross" uses arithmetic to state what
+> is done — `procedure`.
 >
 > **Excludes:** a term's meaning with no computation given (→ `definition`); a
-> reported value rather than the rule producing it (→ `observation`); ordered
-> instructions to a reader (→ `procedure`).
+> reported value rather than the rule producing it (→ `observation`); arithmetic
+> in service of an operational instruction (→ `procedure`).
 >
 > **Doc.** "Signal = z-score of the trailing 30-day change in vehicle count,
 > winsorized at 1% and neutralized by sector."
@@ -697,9 +831,13 @@ boundary is stated once rather than twice and cannot drift between two entries.
 
 #### `assumption` → `model`
 
-> **Cue.** States something taken for granted for the thing to hold. Marker
+> **Cue.** **A leap of faith.** Something taken on trust for the rest to hold —
+> asserted without evidence and without proof, and the sentence knows it. Marker
 > words: *assumes*, *presupposes*, *conditional on*, *holds only if*, *provided
-> that*.
+> that*, *on the standing assumption that*.
+>
+> **Against `architecture`.** An `assumption` is believed; an `architecture` is
+> built. If it could be inspected in the system, it is not an assumption.
 >
 > **Excludes:** something needed to run rather than to be true (→ `dependency`);
 > a limit on where it applies, stated as a result (→ `observation` or `principle`);
@@ -713,14 +851,20 @@ boundary is stated once rather than twice and cannot drift between two entries.
 > at their assumptions far more often than at their arithmetic, and assumptions
 > are usually the least recorded part of a model.
 
-#### `dependency` → `model`
+#### `dependency` → `system`
 
-> **Cue.** States that something is required, relied on, or a prerequisite.
-> Marker words: *requires*, *depends on*, *needs*, *is a prerequisite for*.
+> **Cue.** **An established requirement** — a hard fact that the thing cannot
+> run without. Marker words: *requires*, *depends on*, *needs*, *is a
+> prerequisite for*, *without X you cannot*.
 >
-> **Excludes:** something taken to be true rather than needed to run (→
-> `assumption`); a component the thing is made of (→ `architecture`); a rule
-> compelling someone to supply it (→ `obligation`).
+> **Hard, not casual.** A `dependency` holds as a matter of fact about the
+> system. Someone noting that a piece of data would be handy, or that they wish
+> a mapping existed, is reporting their situation — `observation`, which is
+> anecdotal by nature.
+>
+> **Excludes:** something taken for granted for a claim to hold (→ `assumption`);
+> what the thing is built from (→ `architecture`); an anecdotal note about what
+> is missing (→ `observation`).
 >
 > **Doc.** "Signal construction requires the earnings calendar in order to
 > suppress positions into scheduled announcements."
@@ -746,11 +890,12 @@ rather than patched into a definition.
 | `event` / `decision` | Was a choice made? An event happened to you; a decision was chosen and constrains later action. |
 | `decision` / `obligation` | Is there a modal? An obligation states a standing requirement in modal form; a decision states one was established. If both fit, the modal wins. |
 | `decision` / `recommendation` | Settled or proposed? A decision is closed; a recommendation is still advice. |
-| `obligation` / `prohibition` | Polarity of the modal. Requirement versus forbidding. |
+| `obligation` / `prohibition` | **What to do** versus **what not to do.** Judge by the action demanded, not by grammatical polarity — a negatively-phrased requirement that demands an action is an `obligation`. `[MEASURED]` Both items in the 21-pair collision were compound, carrying a requirement and a forbidding in one sentence; under §2.4 both tests score above 90 and the statement resolves to `general` with `multi_fire`. |
+| `background` / `event` | `[MEASURED]` 13 rater-pairs. Both report what happened; the difference is what the sentence is *for*. An `event` records an occurrence in its own right; `background` uses occurrences to explain how things came to be, defines nothing, and is normally signalled or positioned as context. Decide from the surrounding context, not the sentence alone. |
 | `recommendation` / `obligation` | Is anyone accountable? Advice can be ignored without violation; an obligation cannot. |
 | `principle` / `architecture` | `[MEASURED]` The largest collision in the second test (17 disagreeing rater-pairs, when these were `driver`/`structure`). WHY it works versus HOW it is built. If deleting the sentence would leave you unable to explain the idea, it is a principle; if it would leave you unable to rebuild the thing, it is architecture. |
 | `principle` / `obligation` | Explanatory or normative? A principle says why something holds; an obligation says someone must do something. "Prefer small reversible steps" is normative — it is a `recommendation` or `obligation`, not a principle. |
-| `principle` / `recommendation` | `[MEASURED]` 12 disagreeing rater-pairs in the third test, across two coarse types. `[DESIGN]` **If the statement contains an instruction the reader could act on, it is a `recommendation` — even when it also explains why.** The explanation is context for the advice. "Overlapping returns inflate Sharpe by autocorrelation, so use Newey-West at lag 19" is a `recommendation`; drop the second clause and it becomes a `principle`. This is the mirror of the strip test: a sentence doing two jobs gets one deterministic home. |
+| `principle` / `recommendation` — the theoretical/practical test | `[MEASURED]` 18 rater-pairs. Is it **theoretical or hands-on**? A `principle` is a general, logical guide that would hold for anyone, stated at concept level. A `recommendation` is practical advice drawn from experience, bearing on a choice at hand **where more than one valid option exists**, and it usually sounds conversational. *"Counterpoint on freight — whatever we build there we're third in line behind people with faster feeds"* states a fact but its job is to stop an action, and it is experiential and conversational: `recommendation`. |
 | `decision` / `procedure` | `[MEASURED]` 7 disagreeing rater-pairs in the third test, across two coarse types. `[DESIGN]` **Does the sentence name what was chosen *instead of* something else?** Surface cues: *rather than*, *not X but Y*, *instead of*, *we standardised on*. Naming the rejected alternative makes it a `decision`; stating only how the thing is done makes it a `procedure`. "Models are versioned by artifact SHA-256, not by semantic version" names the alternative — `decision`. |
 | `principle` / `assumption` | Is it the reason it works, or a precondition for it working? A principle explains; an assumption is what must hold for the explanation to survive. |
 | `principle` / `observation` | `[MEASURED]` The largest collision measured in any run (37 rater-pairs in the control, 17 after repair and renaming, 11 with the strip test). Apply the **strip test** from §3.2 `observation`: delete the numbers and the sample from the sentence. If nothing of substance survives, it is an `observation` — *even if the author generalizes from it*. If a causal claim stands on its own without any measurement, it is a `principle`. `[MEASURED]` A second, scope-judging test was written for this boundary and measured worse (§2.9); do not reintroduce one without re-testing. |
@@ -761,6 +906,10 @@ rather than patched into a definition.
 | `definition` / `background` | Fixing a term or setting the scene? A definition pins meaning; background situates the reader. |
 | `definition` / `distinction` | One term or two? A definition fixes one; a distinction separates two. |
 | `obligation` / `procedure` | `[MEASURED]` A cross-coarse leak in the first test (6 disagreeing rater-pairs). A procedure tells you the steps; an obligation tells you that doing it is required. A numbered list with a *must* in it is an obligation. |
+| `procedure` / `definition` | `[MEASURED]` 15 rater-pairs, all on one naming-convention statement. Does the sentence describe **what a thing is**, or **what to do with it**? A naming scheme, a schema, a set of valid values is a `definition` even when following it requires action. |
+| `procedure` / `principle` | Is the payload the instruction or the reason? A `procedure` tells you what is done; a `principle` tells you why it holds. Where a sentence carries both, the instruction wins — unless it is hedged or reassuring, in which case see below. |
+| any / `recommendation` — the put-forward rule | `[MEASURED]` 15 rater-pairs on proposed architectures, and the dominant signal in the 72-pair `procedure` collision. **Anything proposed is a `recommendation`**, whatever it proposes. Markers: *we propose*, *proposal:*, *this RFC proposes*, *we recommend*, *is preferable*, *should*, *worth*, *what if*, *try*, *suggest*. Content does not override this — a fully specified system architecture that is being put forward is a `recommendation`, not an `architecture`. |
+| any / `recommendation` — the reassurance marker | `[DESIGN]` **Procedures and principles do not have feelings.** Language that soothes, warns off, or manages the reader's reaction — *don't panic*, *no need to worry*, *don't stress*, *ignore me* — marks the sentence as advice from a person, not an operational instruction or a standing relation. Route to `recommendation`. |
 
 ---
 
@@ -807,7 +956,7 @@ evidence, a way to raise agreement.
 Resolution is a fixed priority order over the coarse types, applied by code:
 
 ```
-case → rule → method → concept → model        …and `background` last of all
+case → method → concept → model → system        …and `background` last of all
 ```
 
 Most surface-recognizable first. `background` is exempted from its coarse type's
@@ -869,7 +1018,41 @@ resolved to `rule`; otherwise retained but not enforced.
 property associated with reliable categories (§3), but this specific field has
 not been evaluated.
 
-### 5.2 `provenance` — where the record came from
+### 5.2 `form` — statement, question or answer
+
+```
+form: statement | question | answer
+```
+
+Orthogonal to `type`, and available under **every** coarse category. A question
+about a procedure is `type: procedure, form: question`; the answer that follows
+is `type: procedure, form: answer`.
+
+- `statement` — asserts something. The default.
+- `question` — asks for something. Asserts nothing, defines nothing, instructs
+  nothing.
+- `answer` — supplied in response to a question, and only meaningful with one.
+
+`[MEASURED]` **This closes the largest uncovered source of disagreement.** Four
+questions in the 160-statement corpus produced roughly **50 disagreeing
+rater-pairs**, scattered across six different pairs — `background`/`observation`,
+`background`/`event`, `background`/`general`, `dependency`/`observation`,
+`general`/`observation`, `event`/`general`. Raters had no way to record that a
+statement was a question, so each one was filed by its *subject matter* instead:
+a question about a data vendor landed near `dependency`, a question about
+history landed near `event`, and no two raters chose alike.
+
+`[DESIGN]` **The type still applies.** *"Did the rope theta get bumped to 500k
+before or after we forked off main?"* is a `question` about a `decision`. Typing
+the subject keeps questions retrievable alongside what they are about, which is
+what makes "show me the open questions on this topic" a query rather than a
+scan.
+
+`[DESIGN]` `answer` is the one value that implies a relation to another
+statement. Recording it is useful now; linking it to its question needs the edge
+layer that is out of scope for v1 (§5.4).
+
+### 5.3 `provenance` — where the record came from
 
 ```
 provenance: { medium, author, source_id }
@@ -892,7 +1075,7 @@ fine α 0.811 against 0.940 for document statements on the same codebook and the
 same run (§6). Without provenance on the record that gap is a fact nobody can
 act on; with it, a consumer can weight or filter by medium.
 
-### 5.3 Flags
+### 5.4 Flags
 
 `negative_result` — the statement reports an absence, null, or no-effect
 finding. `caveat` — the statement limits, scopes, or excepts something else.
@@ -903,9 +1086,11 @@ similarity — "X does not work" and "X works" are near neighbours — so withou
 explicit marker it is unrecoverable downstream. That is a mechanism argument,
 not a measurement.
 
-### 5.4 What this classifier does not produce
+### 5.5 What this classifier does not produce
 
-- **No confidence score.** `[VERIFIED]` Verbalized confidence reliability
+- **No confidence score is published.** Per-label confidence is elicited
+  internally to drive `general` assignment (§2.4) but is not part of the output
+  record. `[VERIFIED]` Verbalized confidence reliability
   depends strongly on how the model is asked, with no universal best method
   across 17 prompt methods × 10 datasets × 11 models spanning 2B–110B; the best
   method is model-dependent and small models' confidence is near-independent of
